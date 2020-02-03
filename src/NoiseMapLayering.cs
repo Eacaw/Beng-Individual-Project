@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Text;
+using BEng_Individual_Project.lib;
 
 namespace BEng_Individual_Project.src
 {
@@ -14,23 +15,28 @@ namespace BEng_Individual_Project.src
          * Method to return the noise data to the caller
          * Will produce layered noise maps to specified level of detail.
          */
-        public static float[,] getNoiseData(int width, int height, int seed, int octaves, float scale, int lacunarity, float perisitance)
+        public static float[,] getNoiseData(int width, int height, int seed, int octaves, float scale, int lacunarity, float persistance)
         {
-            float[,] noiseValues;
-            
+            float[,] noiseValues = new float[width,height];
 
             SimplexNoise.Noise.Seed = seed;
             //Repeat this for the total number of octaves requested
             for (int octaveCount = 0; octaveCount < octaves; octaveCount++)
             {
                 // Update the scale factor to change the frequency of the noise for this layer
-                float scale = scale * Math.Pow(lacunarity, octaveCount);
+                float scaler = scale * (float)Math.Pow(lacunarity, octaveCount);
                 // Generate a noise map with set scale factor
-                noiseValues = generateNewNoiseMap(width, height, scale);
-                // Find minimum and maximum values for normalising
-                findMinMax(noiseValues, width, height);
+                float[,] noiseLayer = generateNewNoiseMap(width, height, scale);
+                // Sum the layers together with requested Persistance Value
+                int divisor = (int)(persistance / (octaveCount + 1));
+                noiseValues = sumNoiseMaps(noiseValues, noiseLayer, height, width, divisor);
             }
+            // Find minimum and maximum values for normalising
+            findMinMax(noiseValues, height, width);
+            
+            SaveBitmapImageFile.SaveBitmap("../../../TestImageTwoMillion", width, height, generateImageData(noiseValues, height, width));
 
+            return noiseValues;
 
         }
 
@@ -41,7 +47,10 @@ namespace BEng_Individual_Project.src
             return noiseValue;
         }
 
-        private static void findMinMax(float[,] noiseMap, int width, int height)
+        /**
+         * Find the minimum and maximum values used for normalising the values
+         */
+        private static void findMinMax(float[,] noiseMap, int height, int width)
         {
             for (int i = 0; i < height; i++)
             {
@@ -79,7 +88,7 @@ namespace BEng_Individual_Project.src
         /**
          * Generates byte array for grayscale image data
          */
-        private static byte[] genetateImageData(float[,] noiseValues, int height, int width)
+        private static byte[] generateImageData(float[,] noiseValues, int height, int width)
         {
             byte[] imageDataBytes = new byte[noiseValues.Length];
             int write = 0;
