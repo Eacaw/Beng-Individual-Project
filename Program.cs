@@ -13,19 +13,22 @@ namespace BEng_Individual_Project
         static void Main(string[] args)
         {
 
-            float[,] noiseValues;// = new float[1000,1000];
+            float[,] noiseValues;
 
-            int width = 240;
-            int height = 240;
+            int width = 25;
+            int height = width; // No idea why I get an out of bounds if the map isn't square. WTF! 
             int seed = 1337;
-            int octaves = 3;
-            float scale = 0.01f;
+            int octaves = 8;
+            float scale = 0.005f;
             int lacunarity = 2;
             float persistance = 1;
 
             //noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, octaves, scale, lacunarity, persistance) ;
 
                 noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, octaves, scale, lacunarity, persistance);
+
+            terrainGraph graph = new terrainGraph(height, width, noiseValues);
+            graph.printGraphToConsole();
             
 
         }

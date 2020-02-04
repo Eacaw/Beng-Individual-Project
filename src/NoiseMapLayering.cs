@@ -35,11 +35,16 @@ namespace BEng_Individual_Project.src
                 // Sum the current values with the newly generated values
                 noiseValues = sumNoiseMaps(noiseValues, noiseLayer, height, width, divisor);
 
+                findMinMax(noiseValues, height, width);
+
+                //TODO: Remove this save image line, it's here for debugging! 
+                SaveBitmapImageFile.SaveBitmap("../../../OutputImage " + octaveCount, width, height, generateImageData(noiseValues, height, width));
+
             }
             // Find minimum and maximum values for normalising
             findMinMax(noiseValues, height, width);
 
-            //TODO: Remove this save image file, it's here for debugging! 
+            //TODO: Remove this save image line, it's here for debugging! 
             SaveBitmapImageFile.SaveBitmap("../../../OutputImage", width, height, generateImageData(noiseValues, height, width));
             Console.WriteLine("Output Image Saved");
 
@@ -48,9 +53,9 @@ namespace BEng_Individual_Project.src
         }
 
 
-        public static float[,] generateNewNoiseMap(int length, int width, float scale)
+        public static float[,] generateNewNoiseMap(int height, int width, float scale)
         {
-            float[,] noiseValue = SimplexNoise.Noise.Calc2D(length, width, scale);
+            float[,] noiseValue = SimplexNoise.Noise.Calc2D(width, height, scale);
             return noiseValue;
         }
 
@@ -85,7 +90,7 @@ namespace BEng_Individual_Project.src
             {
                 for (int j = 0; j < width; j++)
                 {
-                    noiseMap1[i, j] += noiseMap2[i, j] / divisor;
+                    noiseMap1[i, j] += (noiseMap2[i, j] / divisor);
                 }
             }
 
