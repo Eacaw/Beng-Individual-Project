@@ -7,7 +7,6 @@ namespace BEng_Individual_Project.lib
 {
     /**
      * Output a bitmap image of the terrain data upon request
-     * Code "UNSAFE", replacement code to be found
      */
     public static class SaveBitmapImageFile
     {
