@@ -25,25 +25,37 @@ namespace BEng_Individual_Project.src
             {
                 // Update the scale factor to change the frequency of the noise for this layer
                 float scaler = scale * (float)Math.Pow(lacunarity, octaveCount);
+
                 // Generate a noise map with set scale factor
-                float[,] noiseLayer = generateNewNoiseMap(width, height, scale);
+                float[,] noiseLayer = generateNewNoiseMap(width, height, scaler);
+
                 // Sum the layers together with requested Persistance Value
-                int divisor = (int)(persistance / (octaveCount + 1));
+                float divisor = (persistance * (float) Math.Pow(2, octaveCount));
+
+                // Sum the current values with the newly generated values
                 noiseValues = sumNoiseMaps(noiseValues, noiseLayer, height, width, divisor);
+
+                findMinMax(noiseValues, height, width);
+
+                //TODO: Remove this save image line, it's here for debugging! 
+                SaveBitmapImageFile.SaveBitmap("../../../OutputImage " + octaveCount, width, height, generateImageData(noiseValues, height, width));
+
             }
             // Find minimum and maximum values for normalising
             findMinMax(noiseValues, height, width);
-            
-            SaveBitmapImageFile.SaveBitmap("../../../TestImageTwoMillion", width, height, generateImageData(noiseValues, height, width));
+
+            //TODO: Remove this save image line, it's here for debugging! 
+            SaveBitmapImageFile.SaveBitmap("../../../OutputImage", width, height, generateImageData(noiseValues, height, width));
+            Console.WriteLine("Output Image Saved");
 
             return noiseValues;
 
         }
 
 
-        private static float[,] generateNewNoiseMap(int length, int width, float scale)
+        public static float[,] generateNewNoiseMap(int height, int width, float scale)
         {
-            float[,] noiseValue = SimplexNoise.Noise.Calc2D(length, width, scale);
+            float[,] noiseValue = SimplexNoise.Noise.Calc2D(width, height, scale);
             return noiseValue;
         }
 
@@ -72,13 +84,13 @@ namespace BEng_Individual_Project.src
         /**
          * Method used to combine two noise maps for layering
          */
-        private static float[,] sumNoiseMaps(float[,] noiseMap1, float[,] noiseMap2, int height, int width, int divisor)
+        private static float[,] sumNoiseMaps(float[,] noiseMap1, float[,] noiseMap2, int height, int width, float divisor)
         {
             for (int i = 0; i < height; i++)
             {
                 for (int j = 0; j < width; j++)
                 {
-                    noiseMap1[i, j] += noiseMap2[i, j] / divisor;
+                    noiseMap1[i, j] += (noiseMap2[i, j] / divisor);
                 }
             }
 
@@ -88,7 +100,7 @@ namespace BEng_Individual_Project.src
         /**
          * Generates byte array for grayscale image data
          */
-        private static byte[] generateImageData(float[,] noiseValues, int height, int width)
+        public static byte[] generateImageData(float[,] noiseValues, int height, int width)
         {
             byte[] imageDataBytes = new byte[noiseValues.Length];
             int write = 0;
@@ -109,7 +121,7 @@ namespace BEng_Individual_Project.src
          */
         private static float normaliseFloat(float value)
         {
-            return (value - minimum) / (maximum - minimum);
+            return ((value - minimum) / (maximum - minimum));
         }
 
 
