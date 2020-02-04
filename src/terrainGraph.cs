@@ -16,13 +16,14 @@ namespace BEng_Individual_Project.src
         {
             this.height = height;
             this.width = width;
+            this.terrainNodes = new DataNode[width, height];
         }
 
         /**
          * Call the noise generator to construct the graph and input all
          * data into the nodes. 
          */
-        private void constructTerrainFromNoiseMap()
+        private void populateTerrainGraph(float[,] noiseMap)
         {
 
         }
