@@ -4,18 +4,23 @@ using System.Text;
 
 namespace BEng_Individual_Project.src
 {
-    class DataNode
+    public class DataNode
     {
-        public DataNode[] neighbourNodes = new DataNode[8];
+        public DataNode[] neighbourNodes = new DataNode[8]; // Max Neighbours is 8 using NW -> W clockwise
         public float heightValue { get; set; }
+        int[] graphPosition = new int[2];
+        float hostileRiskValue;
 
 
         /**
          * Data Node Constructor
          */
-        public DataNode(float heightValue)
+        public DataNode(float heightValue, int xPosition, int yPosition)
         {
             this.heightValue = heightValue;
+            this.graphPosition[0] = xPosition;
+            this.graphPosition[1] = yPosition;
+            this.hostileRiskValue = 0;
         }
 
         /**
@@ -56,5 +61,42 @@ namespace BEng_Individual_Project.src
 
             return -1; // Neighbour was an edge, and no value can be found.
         }
+        /**
+         * Overloaded method from above, takes in 
+         */
+        public float getCostValue(DataNode neighbourNode)
+        {
+            {
+                float costValue;
+
+                if (neighbourNode.heightValue != -1) // Ensure that the neighbour being indexed isn't an edge
+                {
+                    costValue = this.heightValue - neighbourNode.heightValue;
+
+                    if (costValue > 0) // Path is Downhill
+                    {
+                        return costValue / 2;
+                    }
+                    else if (costValue < 0) // Path is Uphill
+                    {
+                        return Math.Abs(costValue);
+                    }
+                    else // Path has no height difference
+                    {
+                        return 0;
+                    }
+                }
+                return -1; // Neighbour was an edge, and no value can be found.
+            }
+        }
+
+        /**
+         * Add calculated hostileRiskValue to node data
+         */
+         public void addHostileRiskValue(float hostileRisk)
+        {
+            this.hostileRiskValue = hostileRisk;
+        }
+
     }
 }
