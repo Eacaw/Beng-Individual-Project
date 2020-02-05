@@ -44,7 +44,7 @@ namespace BEng_Individual_Project.src
         }
 
         /**
-         * Return Path Length
+         * Return Path Length - Total number of nodes in path
          */
         public int getPathLength()
         {

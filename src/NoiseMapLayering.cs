@@ -15,7 +15,7 @@ namespace BEng_Individual_Project.src
          * Method to return the noise data to the caller
          * Will produce layered noise maps to specified level of detail.
          */
-        public static float[,] getNoiseData(int width, int height, int seed, int octaves, float scale, int lacunarity, float persistance)
+        public static float[,] getNoiseData(int width, int height, int seed, int octaves, float scale, float lacunarity, float persistance)
         {
             float[,] noiseValues = new float[width,height];
 
@@ -32,22 +32,30 @@ namespace BEng_Individual_Project.src
                 // Sum the layers together with requested Persistance Value
                 float divisor = (persistance * (float) Math.Pow(2, octaveCount));
 
+                //Console.WriteLine("Divisor: " + divisor);
+
                 // Sum the current values with the newly generated values
                 noiseValues = sumNoiseMaps(noiseValues, noiseLayer, height, width, divisor);
 
-                findMinMax(noiseValues, height, width);
+                //findMinMax(noiseValues, height, width);
 
                 //TODO: Remove this save image line, it's here for debugging! 
                 //SaveBitmapImageFile.SaveBitmap("../../../OutputImage " + octaveCount, width, height, generateImageData(noiseValues, height, width));
 
             }
             // Find minimum and maximum values for normalising
-            //findMinMax(noiseValues, height, width);
-
+            findMinMax(noiseValues, height, width);
+            
             //TODO: Remove this save image line, it's here for debugging! 
-            //SaveBitmapImageFile.SaveBitmap("../../../OutputImage", width, height, generateImageData(noiseValues, height, width));
-            //Console.WriteLine("Output Image Saved");
-
+            StringBuilder fileName = new StringBuilder("../../../");
+            fileName.Append(lacunarity.ToString().Replace(".","p"));
+            fileName.Append(",");
+            fileName.Append(scale.ToString().Replace(".", "p"));
+            Console.WriteLine(fileName.ToString());
+            Console.WriteLine("min: " + minimum + " max: " + maximum);
+            SaveBitmapImageFile.SaveBitmap(fileName.ToString(), width, height, generateImageData(noiseValues, height, width)) ;
+            minimum = float.MaxValue;
+            maximum = 0;
             return noiseValues;
 
         }

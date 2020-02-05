@@ -20,25 +20,18 @@ namespace BEng_Individual_Project
             int seed = 1337;
             int octaves = 8;
             float scale = 0.005f;
-            int lacunarity = 2;
+            int lacunarity = 1;
             float persistance = 1;
 
             //noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, octaves, scale, lacunarity, persistance) ;
 
-                noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, octaves, scale, lacunarity, persistance);
-
-            terrainGraph graph = new terrainGraph(height, width, noiseValues);
-            //graph.printGraphToConsole();
-            graph.populateTerrainGraph();
-            graph.connectNodes();
-
-            int i = 0, j = 0;
-
-            while(graph.terrainNodes[i,j].neighbourNodes[4] != null)
+            for (int i = 1; i < 9; i++)
             {
-                Console.WriteLine("Node: " + i + "," + j + ": " + graph.terrainNodes[i, j].heightValue);
-                i++;
-                j++;
+                for (int j = 1; j < 9; j++)
+                {
+                    noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, octaves, (float)(0.003 * j), (float)((0.2 * i) + 1), persistance);
+                    noiseValues = new float[1000, 1000];
+                }
             }
 
 
