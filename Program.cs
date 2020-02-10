@@ -23,17 +23,23 @@ namespace BEng_Individual_Project
             int lacunarity = 1;
             float persistance = 1;
 
-            //noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, octaves, scale, lacunarity, persistance) ;
+            noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, octaves, scale, lacunarity, persistance) ;
 
-            for (int i = 1; i < 9; i++)
-            {
-                for (int j = 1; j < 9; j++)
-                {
-                    noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, octaves, (float)(0.003 * j), (float)((0.2 * i) + 1), persistance);
-                    noiseValues = new float[1000, 1000];
-                }
-            }
+            terrainGraph graph = new terrainGraph(height, width, noiseValues);
 
+            //for (int i = 0; i < 5; i++)
+            //{
+                Agent testAgent = new Agent(graph.terrainNodes[0, 0], graph.terrainNodes[50, 50], graph.getEdgeNode());
+                testAgent.performBlindSearch();
+                testAgent.agentPath.printPathway();
+                Console.WriteLine("------");
+            //}
+
+            graph.increaseGrayscaleMapping();
+            testAgent.agentPath.paintPathway();
+            graph.saveImageOfGraph("../../../PathwayTesting");
+
+            
 
 
         }

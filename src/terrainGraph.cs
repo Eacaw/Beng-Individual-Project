@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using BEng_Individual_Project.lib;
+using System.Drawing;
 
 namespace BEng_Individual_Project.src
 {
@@ -10,20 +12,34 @@ namespace BEng_Individual_Project.src
         private float[,] noiseMap;
         private int height, width;
 
-        private DataNode edgeNode;
+        private DataNode edgeNode { get; set; }
 
-        private float minimum = float.MaxValue, maximum = 0;
+        public float minimum {get; set;}
+        public float maximum { get; set; }
 
         /**
          * Terrain Graph Constructor
          */
         public terrainGraph(int height, int width, float[,] noiseMap)
         {
+
+            this.maximum = 0;
+            this.minimum = float.MaxValue;
+
             this.height = height;
             this.width = width;
             this.noiseMap = noiseMap;
             this.terrainNodes = new DataNode[width, height];
             this.edgeNode = new DataNode(-1,-1,-1);
+
+            this.populateTerrainGraph();
+            this.connectNodes();
+
+        }
+
+        public DataNode getEdgeNode()
+        {
+            return this.edgeNode;
         }
 
         /**
@@ -164,9 +180,53 @@ namespace BEng_Individual_Project.src
         /**
          * Linearly map values into a new given range
          */
-        private float mapValue(float value, float initialMin, float initialMax, float newMin, float newMax)
+        public float mapValue(float value, float initialMin, float initialMax, float newMin, float newMax)
         {
             return (newMin + ((value - initialMin) * (newMax - newMin)) / (initialMax - initialMin));
+        }
+
+        /**
+         * Method that maps all terrain height values to between 50 - 255
+         * Used early in development to show the path clearly with a black line
+         */
+         public void increaseGrayscaleMapping()
+        {
+            findMinMax(this.noiseMap, this.height, this.width);
+            for (int height = 0; height < this.height; height++)
+            {
+                for (int width = 0; width < this.width; width++)
+                {
+                    this.terrainNodes[width, height].setHeightValue(mapValue(this.terrainNodes[width, height].heightValue, minimum, maximum, 50, 255));
+                }
+            }
+        }
+
+        /*
+         * Method to convert the height data from the nodes into ]
+         * a float array format for image saving
+         */
+         private float[,] nodesToFloatArray()
+        {
+
+            float[,] nodeToFloatData = new float[this.height, this.width];
+            for (int i = 0; i < this.height; i++)
+            {
+                for (int j = 0; j < this.width; j++)
+                {
+                    nodeToFloatData[i, j] = this.terrainNodes[i, j].heightValue;
+                }
+            }
+
+            return nodeToFloatData;
+        }
+
+        /**
+         * Generate Output image from Graph instace
+         */
+         public void saveImageOfGraph(string filename)
+        {
+            //SaveBitmapImageFile.SaveBitmap(filename,this.width,this.height, NoiseMapLayering.generateImageData(nodesToFloatArray(), this.height, this.width));
+            SaveBitmapImageFile.CopyDataToBitmap(filename, NoiseMapLayering.generateImageData(nodesToFloatArray(), this.height, this.width), height, width);
         }
 
 
@@ -181,12 +241,12 @@ namespace BEng_Individual_Project.src
                 {
                     if (noiseMap[i, j] > maximum)
                     {
-                        maximum = noiseMap[i, j];
+                        this.maximum = noiseMap[i, j];
                     }
 
                     if (noiseMap[i, j] < minimum)
                     {
-                        minimum = noiseMap[i, j];
+                        this.minimum = noiseMap[i, j];
                     }
                 }
             }

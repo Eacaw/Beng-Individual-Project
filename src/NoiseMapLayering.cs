@@ -37,22 +37,15 @@ namespace BEng_Individual_Project.src
                 // Sum the current values with the newly generated values
                 noiseValues = sumNoiseMaps(noiseValues, noiseLayer, height, width, divisor);
 
-                //findMinMax(noiseValues, height, width);
-
-                //TODO: Remove this save image line, it's here for debugging! 
-                //SaveBitmapImageFile.SaveBitmap("../../../OutputImage " + octaveCount, width, height, generateImageData(noiseValues, height, width));
-
             }
             // Find minimum and maximum values for normalising
             findMinMax(noiseValues, height, width);
             
-            //TODO: Remove this save image line, it's here for debugging! 
+            //TODO: Remove this save image code, it's here for debugging! 
             StringBuilder fileName = new StringBuilder("../../../");
             fileName.Append(lacunarity.ToString().Replace(".","p"));
             fileName.Append(",");
             fileName.Append(scale.ToString().Replace(".", "p"));
-            Console.WriteLine(fileName.ToString());
-            Console.WriteLine("min: " + minimum + " max: " + maximum);
             SaveBitmapImageFile.SaveBitmap(fileName.ToString(), width, height, generateImageData(noiseValues, height, width)) ;
             minimum = float.MaxValue;
             maximum = 0;
@@ -111,6 +104,7 @@ namespace BEng_Individual_Project.src
         public static byte[] generateImageData(float[,] noiseValues, int height, int width)
         {
             byte[] imageDataBytes = new byte[noiseValues.Length];
+            findMinMax(noiseValues, height, width);
             int write = 0;
             for (int i = 0; i < height; i++)
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace BEng_Individual_Project.src
 {
@@ -49,6 +50,46 @@ namespace BEng_Individual_Project.src
         public int getPathLength()
         {
             return this.pathway.Count;
+        }
+
+        /**
+         * Check if node is in path already
+         */
+         public bool checkForExistingNode(DataNode checkNode)
+        {
+            if (this.pathway.Contains(checkNode))
+            {
+                return true;
+            } else
+            {
+                return false;
+            }
+        }
+
+        /**
+         * Method to print the pathway in cartesian form
+         */
+         public void printPathway()
+        {
+            for(int i = 0; i < this.pathway.Count; i++)
+            {
+                StringBuilder GraphPos = new StringBuilder("x: ");
+                GraphPos.Append(pathway[i].getGraphLocation()[0]);
+                GraphPos.Append(" y: ");
+                GraphPos.Append(pathway[i].getGraphLocation()[1]);
+                Console.WriteLine(GraphPos.ToString());
+            }
+        }
+
+        /**
+         * Mehtod paints all nodes in the path with a value of 0
+         */
+         public void paintPathway()
+        {
+            for (int i = 0; i < this.pathway.Count; i++)
+            {
+                this.pathway[i].setHeightValue(0);
+            }
         }
 
     }

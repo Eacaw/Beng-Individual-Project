@@ -24,6 +24,14 @@ namespace BEng_Individual_Project.src
         }
 
         /**
+         * Method to return cartesian position on the graph
+         */
+         public int[] getGraphLocation()
+        {
+            return this.graphPosition;
+        }
+
+        /**
          * Method used to construct the graph, connecting all
          * nodes together with references to their surrounding nodes
          */
@@ -61,6 +69,8 @@ namespace BEng_Individual_Project.src
 
             return -1; // Neighbour was an edge, and no value can be found.
         }
+
+
         /**
          * Overloaded method from above, takes in 
          */
@@ -96,6 +106,14 @@ namespace BEng_Individual_Project.src
          public void addHostileRiskValue(float hostileRisk)
         {
             this.hostileRiskValue = hostileRisk;
+        }
+
+        /**
+         * Method to manualy set the height value
+         */
+         public void setHeightValue(float heightValue)
+        {
+            this.heightValue = heightValue;
         }
 
     }
