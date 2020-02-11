@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using BEng_Individual_Project.lib;
 
 namespace BEng_Individual_Project.src
 {
@@ -8,6 +9,11 @@ namespace BEng_Individual_Project.src
     {
         public Path agentPath { get; set; }
         DataNode startingNode, targetNode, currentNode;
+
+        // GA variables
+        float fitnessScore { get; set; }
+
+        
 
         public Agent(DataNode startingNode, DataNode targetNode, DataNode edgeNode)
         {
@@ -24,7 +30,9 @@ namespace BEng_Individual_Project.src
         }
 
 
-        public void performBlindSearch()
+
+
+        public int performBlindSearch()
         {
 
             bool endOfPathReached = false;
@@ -33,18 +41,23 @@ namespace BEng_Individual_Project.src
             {
                 currentNode = blindSearchStep(currentNode);
 
-                if (currentNode == targetNode || currentNode.heightValue < -2)
-                {
+                if (currentNode == targetNode) {
+                    Console.WriteLine("Target Reached");
                     endOfPathReached = true;
+                    return 255;
+                } else if ( currentNode.heightValue < -2)
+                {
+                    Console.WriteLine("Auto Kill");
+                    endOfPathReached = true;
+                    return 0;
                 } else
                 {
                     this.agentPath.addNodeToPath(currentNode);
                 }
 
             }
-
-            Console.WriteLine("Path Complete");
-
+            //Console.WriteLine("Path Complete");
+            return 0;
 
         }
 
@@ -73,14 +86,22 @@ namespace BEng_Individual_Project.src
             //Console.WriteLine("After entrapment: " + potentialneighbours.Count);
 
             potentialneighbours.Reverse();
+
+            potentialneighbours = ListShuffle.Shuffle(potentialneighbours);
+
             if (potentialneighbours.Count != 0)
             {
                 Random prng = new Random();
                 int selectedNeighbour = prng.Next(0, potentialneighbours.Count - 1);
+
+                //Console.WriteLine(potentialneighbours.Count);
+                //Console.WriteLine(selectedNeighbour);
+                //Console.WriteLine("-----");
                 
-                //Console.WriteLine("Neighbours to chose from: " + potentialneighbours.Count);
                 return potentialneighbours[selectedNeighbour];
             }
+
+            
 
             DataNode endOfPath = new DataNode(-3, -3, -3);
             return endOfPath;

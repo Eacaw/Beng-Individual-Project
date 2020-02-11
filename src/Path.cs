@@ -21,7 +21,7 @@ namespace BEng_Individual_Project.src
         public float getPathCost()
         {
             float totalCostValue = 0;
-            for (int i = 0; i < pathway.Count - 1; i++)
+            for (int i = 0; i < pathway.Count -1; i++)
             {
                 float tempCost = this.pathway[i].getCostValue(this.pathway[i + 1]);
                 if(tempCost != -1) // Cost value of -1 means edge node has been found
@@ -84,11 +84,11 @@ namespace BEng_Individual_Project.src
         /**
          * Mehtod paints all nodes in the path with a value of 0
          */
-         public void paintPathway()
+         public void paintPathway(int heightValueToPaint)
         {
             for (int i = 0; i < this.pathway.Count; i++)
             {
-                this.pathway[i].setHeightValue(0);
+                this.pathway[i].setHeightValue(heightValueToPaint);
             }
         }
 
