@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using BEng_Individual_Project.lib;
 using System.Drawing;
-using BEng_Individual_Project.src.Utilities;
 
 namespace BEng_Individual_Project.src
 {
@@ -15,11 +14,18 @@ namespace BEng_Individual_Project.src
 
         private DataNode edgeNode { get; set; }
 
+        public float minimum {get; set;}
+        public float maximum { get; set; }
+
         /**
          * Terrain Graph Constructor
          */
         public terrainGraph(int height, int width, float[,] noiseMap)
         {
+
+            this.maximum = 0;
+            this.minimum = float.MaxValue;
+
             this.height = height;
             this.width = width;
             this.noiseMap = noiseMap;
@@ -60,7 +66,6 @@ namespace BEng_Individual_Project.src
         /**
          * Connect the graph's nodes together through node's neighbour Array
          * DO NOT CALL BEFORE POPULATING GRAPH!
-         * TODO: Find a more efficient way to achieve this
          */
          public void connectNodes()
         {
@@ -160,9 +165,8 @@ namespace BEng_Individual_Project.src
          */
         public void printGraphToConsole()
         {
-            float[] minMaxValues = minMax.findMinMax(nodesToFloatArray(), this.height, this.width);
-            float minimum = minMaxValues[0], maximum = minMaxValues[1];
-
+            populateTerrainGraph();
+            findMinMax(noiseMap, this.height, this.width);
             for (int i = 0; i < this.height; i++)
             {
                 for (int j = 0; j < this.width; j++)
@@ -187,9 +191,7 @@ namespace BEng_Individual_Project.src
          */
          public void increaseGrayscaleMapping()
         {
-            float[] minMaxValues = minMax.findMinMax(this.noiseMap, this.height, this.width);
-            float minimum = minMaxValues[0], maximum = minMaxValues[1];
-
+            findMinMax(this.noiseMap, this.height, this.width);
             for (int height = 0; height < this.height; height++)
             {
                 for (int width = 0; width < this.width; width++)
@@ -223,11 +225,32 @@ namespace BEng_Individual_Project.src
          */
          public void saveImageOfGraph(string filename)
         {
-            bitmapSaving.generateOutputImage(filename, this.width, this.height, nodesToFloatArray());
+            //SaveBitmapImageFile.SaveBitmap(filename,this.width,this.height, NoiseMapLayering.generateImageData(nodesToFloatArray(), this.height, this.width));
+            SaveBitmapImageFile.CopyDataToBitmap(filename, NoiseMapLayering.generateImageData(nodesToFloatArray(), this.height, this.width), height, width);
         }
 
 
-        
+        /**
+         * TODO: DEBUG CODE - REMOVE AND REWRITE METHOD IN NOISE LAYERING
+         */
+        private void findMinMax(float[,] noiseMap, int height, int width)
+        {
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    if (noiseMap[i, j] > maximum)
+                    {
+                        this.maximum = noiseMap[i, j];
+                    }
+
+                    if (noiseMap[i, j] < minimum)
+                    {
+                        this.minimum = noiseMap[i, j];
+                    }
+                }
+            }
+        }
 
     }
 }

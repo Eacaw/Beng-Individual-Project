@@ -45,10 +45,10 @@ namespace BEng_Individual_Project.lib
         }
 
 
-        public static void CopyDataToBitmap(string filename, byte[] data, int height, int width)
+        public static Bitmap CopyDataToBitmap(string filename, byte[] data, int height, int width)
         {
             //Here create the Bitmap to the know height, width and format
-            Bitmap bmp = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+            Bitmap bmp = new Bitmap(width, height, PixelFormat.Format32bppRgb);
 
             //Create a BitmapData and Lock all pixels to be written 
             BitmapData bmpData = bmp.LockBits(
@@ -62,10 +62,10 @@ namespace BEng_Individual_Project.lib
             //Unlock the pixels
             bmp.UnlockBits(bmpData);
 
-            bmp.Save(filename);
+            bmp.Save(filename, ImageFormat.Jpeg);
 
             //Return the bitmap 
-            //return bmp;
+            return bmp;
         }
 
         public static void saveBitmapData(string filename, byte[] imageData, int height, int width)
@@ -74,7 +74,7 @@ namespace BEng_Individual_Project.lib
             Bitmap bmp = new Bitmap(width*4, height*4, PixelFormat.Format24bppRgb);
 
             // Lock the bitmap's bits.  
-            Rectangle rect = new Rectangle(0, 0, bmp.Width * 4, bmp.Height * 4);
+            Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
             BitmapData bmpData =
                 bmp.LockBits(rect, ImageLockMode.ReadWrite,
                 bmp.PixelFormat);

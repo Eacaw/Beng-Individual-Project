@@ -21,7 +21,7 @@ namespace BEng_Individual_Project.src
         public float getPathCost()
         {
             float totalCostValue = 0;
-            for (int i = 0; i < pathway.Count -1; i++)
+            for (int i = 0; i < pathway.Count - 1; i++)
             {
                 float tempCost = this.pathway[i].getCostValue(this.pathway[i + 1]);
                 if(tempCost != -1) // Cost value of -1 means edge node has been found
