@@ -46,15 +46,17 @@ namespace BEng_Individual_Project
 
             //shortestPath.paintPathway(0);
 
+            string line = "";
+
             //Run the simulation 100 times
-            while (nonZeroAgents < 1000)
+            while (nonZeroAgents < 25000)
             {
                 // Start Stopwatch
                 var agentWatch = System.Diagnostics.Stopwatch.StartNew();
 
                 // Generate new Agent for testing
-                Agent testAgent = new Agent(graph.terrainNodes[0, 0], graph.terrainNodes[width -2, height - 2], graph.getEdgeNode());
-                
+                Agent testAgent = new Agent(graph.terrainNodes[0, 0], graph.terrainNodes[width - 2, height - 2], graph.getEdgeNode());
+
                 // Perform Search
                 int output = testAgent.performBlindSearch();
                 if (output == 255)
@@ -85,9 +87,22 @@ namespace BEng_Individual_Project
                     }
 
                     //Output time taken
-                    
+
                     //Console.WriteLine("Time taken: " + (int)elapsedMS);
-                    Console.WriteLine("Agent: " + agentCount + " \t | NZAs : " + nonZeroAgents + " \t | Time: " + elapsedMS + " \t | ZAs: " + (agentCount - prevAgentCount - 1));
+
+                    //Progress output data
+                    //Console.WriteLine("Agent: " + agentCount + " \t | NZAs : " + nonZeroAgents + " \t | Time: " + elapsedMS + " \t | ZAs: " + (agentCount - prevAgentCount - 1));
+
+                    string backup = new string('\b', line.Length);
+                    Console.Write(backup);
+                    line = string.Format("{0} Agents", nonZeroAgents);
+                    Console.Write(line);
+
+                    // Used to output an intial backup set of 25,000 intial paths for choice for the initial population
+                    using (System.IO.StreamWriter file =  new System.IO.StreamWriter("../../../OutputData/PreGeneratedPaths.tsv", true))
+                    {
+                        file.WriteLine(testAgent.agentPath.getPathAsString());
+                    }
                     prevAgentCount = agentCount;
                     //Console.WriteLine("------");
                 }
