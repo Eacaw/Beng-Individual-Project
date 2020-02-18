@@ -12,14 +12,6 @@ namespace BEng_Individual_Project.src
         float hostileRiskValue;
 
 
-        // Variables used for the A* algorithm
-        public float f {get; set;}
-        public float h { get; set; }
-        public float g { get; set; }
-
-        public DataNode parent { get; set; }
-
-
         /**
          * Data Node Constructor
          */
@@ -80,7 +72,7 @@ namespace BEng_Individual_Project.src
 
 
         /**
-         * Overloaded method from above, takes in refernce to data node neighbour
+         * Overloaded method from above, takes in 
          */
         public float getCostValue(DataNode neighbourNode)
         {
@@ -122,11 +114,6 @@ namespace BEng_Individual_Project.src
          public void setHeightValue(float heightValue)
         {
             this.heightValue = heightValue;
-        }
-
-        public DataNode[] getNeighbours()
-        {
-            return this.neighbourNodes;
         }
 
     }

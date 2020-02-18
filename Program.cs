@@ -3,59 +3,53 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using BEng_Individual_Project.src;
-using BEng_Individual_Project.src.A_Star;
+using BEng_Individual_Project.lib;
 using System.Threading;
 
 namespace BEng_Individual_Project
 {
     class Program
     {
+
+        private static int complete = 0;
+
         static void Main(string[] args)
         {
-            // Initial Noise Values
+
             float[,] noiseValues;
 
-            // Noise map generation Parameters
             int width = 500; // Value must be divisable by two into an integer
             int height = width; // No idea why I get an out of bounds if the map isn't square. WTF! 
-            int seed = 1337; // RNG seed
-            int octaves = 8; // Level of details
-            float scale = 0.005f; // Bigger scale = Less Terrain details
-            int lacunarity = 2; // Value must be > 1
-            float persistance = 1; // Value must be 0-1
+            int seed = 1337;
+            int octaves = 8;
+            float scale = 0.005f;
+            int lacunarity = 2;
+            float persistance = 1;
 
-            // Generate the initial noise map using Simplex Noise
             noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, octaves, scale, lacunarity, persistance);
 
-            // Construct the graph and link all the nodes within
             terrainGraph graph = new terrainGraph(height, width, noiseValues);
 
-            // Output image of graph without paths
-            graph.saveImageOfGraph("../../../OutputImages/TerrainImage.bmp");
+            bool targetFound = false;
 
-            // Bring the noise values up so that a black pathway can easily be seen
+            // Output image of graph without paths
+            graph.saveImageOfGraph("../../../OutputImages/TerrainImage");
+
             graph.increaseGrayscaleMapping();
 
             int totalAgentTime = 0;
             int nonZeroAgents = 0;
             int agentsReachedTargetCount = 0;
-            int agentCount = 0;
-            int prevAgentCount = 0;
 
-            //src.Path shortestPath = AStarMethod.runAStar(graph.terrainNodes[1, 1], graph.terrainNodes[49, 49]);
-
-            //shortestPath.paintPathway(0);
-
-            string line = "";
-
-            //Run the simulation 100 times
-            while (nonZeroAgents < 25000)
+            // Run the simulation 100 times
+            // Gets the results for the average time for each agent
+            for (int i = 0; i < 1000; i++)
             {
                 // Start Stopwatch
                 var agentWatch = System.Diagnostics.Stopwatch.StartNew();
 
                 // Generate new Agent for testing
-                Agent testAgent = new Agent(graph.terrainNodes[0, 0], graph.terrainNodes[width - 2, height - 2], graph.getEdgeNode());
+                Agent testAgent = new Agent(graph.terrainNodes[0, 0], graph.terrainNodes[width / 2, height / 2], graph.getEdgeNode());
 
                 // Perform Search
                 int output = testAgent.performBlindSearch();
@@ -68,53 +62,31 @@ namespace BEng_Individual_Project
                 agentWatch.Stop();
 
                 // Report on the cost of the path
-                if (testAgent.agentPath.getPathCost() > 500)
+                Console.WriteLine("Agent " + i + ", Path Cost: " + testAgent.agentPath.getPathCost());
+
+                // Paint pathway to graph
+                testAgent.agentPath.paintPathway(output);
+
+                // Add the agent's time to total for averaging
+                // Only add agents that didn't instantly die to total
+                var elapsedMS = agentWatch.ElapsedMilliseconds;
+                if ((int)elapsedMS > 10)
                 {
-                    //Console.WriteLine("Agent " + agentCount);
-                    //Console.WriteLine("Path Cost: " + testAgent.agentPath.getPathCost());
+                    totalAgentTime += (int)elapsedMS;
                     nonZeroAgents++;
-
-                    // Paint pathway to graph
-                    testAgent.agentPath.paintPathway(output);
-
-                    // Add the agent's time to total for averaging
-                    // Only add agents that didn't instantly die to total
-                    var elapsedMS = agentWatch.ElapsedMilliseconds;
-                    if ((int)elapsedMS > 10)
-                    {
-                        totalAgentTime += (int)elapsedMS;
-
-                    }
-
-                    //Output time taken
-
-                    //Console.WriteLine("Time taken: " + (int)elapsedMS);
-
-                    //Progress output data
-                    //Console.WriteLine("Agent: " + agentCount + " \t | NZAs : " + nonZeroAgents + " \t | Time: " + elapsedMS + " \t | ZAs: " + (agentCount - prevAgentCount - 1));
-
-                    string backup = new string('\b', line.Length);
-                    Console.Write(backup);
-                    line = string.Format("{0} Agents", nonZeroAgents);
-                    Console.Write(line);
-
-                    // Used to output an intial backup set of 25,000 intial paths for choice for the initial population
-                    using (System.IO.StreamWriter file =  new System.IO.StreamWriter("../../../OutputData/PreGeneratedPaths.tsv", true))
-                    {
-                        file.WriteLine(testAgent.agentPath.getPathAsString());
-                    }
-                    prevAgentCount = agentCount;
-                    //Console.WriteLine("------");
                 }
-                agentCount++;
+
+                //Output time taken
+                Console.WriteLine("Time taken for agent " + i + ": " + (int)elapsedMS);
+                Console.WriteLine("------");
             }
             // Output average time per agent
             Console.WriteLine("Average per agent: " + totalAgentTime / nonZeroAgents);
             Console.WriteLine("Agents that reached Target: " + agentsReachedTargetCount);
-            Console.WriteLine("Total Computing Time: " + totalAgentTime / 1000 + " seconds");
+            Console.WriteLine("Total Computing Time: " + totalAgentTime / 60 + " seconds");
 
-            //// Generate output image including paths
-            graph.saveImageOfGraph("../../../OutputImages/PathwayTesting.bmp");
+            // Generate output image including paths
+            graph.saveImageOfGraph("../../../OutputImages/PathwayTesting");
         }
     }
 

@@ -66,23 +66,6 @@ namespace BEng_Individual_Project.src
             }
         }
 
-        public string getPathAsString()
-        {
-            StringBuilder pathAsString = new StringBuilder();
-
-            for (int i = 0; i < this.pathway.Count; i++)
-            {
-                pathAsString.Append(pathway[i].getGraphLocation()[0]);
-                pathAsString.Append("\t");
-                pathAsString.Append(pathway[i].getGraphLocation()[1]);
-                pathAsString.Append("\t");
-            }
-
-            return pathAsString.ToString();
-
-
-        }
-
         /**
          * Method to print the pathway in cartesian form
          */

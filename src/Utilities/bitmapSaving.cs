@@ -20,6 +20,7 @@ namespace BEng_Individual_Project.src.Utilities
             float[] minMaxValues = minMax.findMinMax(noiseValues, height, width);
             byte[] outputData = generateImageData(noiseValues, height, width, minMaxValues);
             SaveBitmap(filename, width, height, outputData);
+
         }
 
         /**
@@ -49,15 +50,14 @@ namespace BEng_Individual_Project.src.Utilities
                 fixed (byte* ptr = data)
                 {
 
-                    using (Bitmap image = new Bitmap(width, height, width * 4, PixelFormat.Format32bppRgb, new IntPtr(ptr)))
+                    using (Bitmap image = new Bitmap(width, height, width * 4,
+                        PixelFormat.Format32bppRgb, new IntPtr(ptr)))
                     {
-                        image.Save(System.IO.Path.ChangeExtension(fileName, ".bmp"),ImageFormat.Bmp);
+                        image.Save(System.IO.Path.ChangeExtension(fileName, ".bmp"));
                     }
                 }
             }
         }
-
-
 
         /**
          * Generates byte array for grayscale image data
