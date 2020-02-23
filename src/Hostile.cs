@@ -6,7 +6,7 @@ namespace BEng_Individual_Project.src
 
         int[] hostilePosition;
         float hostileSeverity;
-        float hostileElevation;
+        float hostileRange;
 
 
         public Hostile(int xPos, int yPos, float severity, float elevation)
@@ -15,7 +15,6 @@ namespace BEng_Individual_Project.src
             this.hostilePosition[0] = xPos;
             this.hostilePosition[1] = yPos;
             this.hostileSeverity = severity;
-            this.hostileElevation = elevation;
         }
 
         public Hostile(int[] position, float severity, float elevation)
@@ -23,7 +22,6 @@ namespace BEng_Individual_Project.src
 
             this.hostilePosition = position;
             this.hostileSeverity = severity;
-            this.hostileElevation = elevation;
 
         }
 

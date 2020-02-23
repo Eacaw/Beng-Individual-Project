@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using System.Text;
 using BEng_Individual_Project.lib;
+using BEng_Individual_Project.src.Utilities;
 
 namespace BEng_Individual_Project.src
 {
     class Agent
     {
         public Path agentPath { get; set; }
+        public float pathCost { get; set; }
+
         DataNode startingNode, targetNode, currentNode;
 
         // GA variables
-        float fitnessScore { get; set; }
+        public float fitnessScore { get; set; }
 
-        
+
 
         public Agent(DataNode startingNode, DataNode targetNode, DataNode edgeNode)
         {
@@ -31,7 +34,10 @@ namespace BEng_Individual_Project.src
 
 
 
-
+        /**
+         * Perform full blind search algorithm to generate
+         * initial population of agents
+         */
         public int performBlindSearch()
         {
 
@@ -39,24 +45,37 @@ namespace BEng_Individual_Project.src
 
             while (!endOfPathReached)
             {
-                currentNode = blindSearchStep(currentNode);
+                // Find the neighbour heuristically closest to the target
+                int preferredNodeNeighbour = numericalUtilities.getPreferredNeighbour(this.currentNode, this.targetNode);
 
-                if (currentNode == targetNode) {
-                    Console.WriteLine("Target Reached");
-                    endOfPathReached = true;
-                    return 255;
-                } else if ( currentNode.heightValue < -2)
+                if (preferredNodeNeighbour == -1)
                 {
-                    Console.WriteLine("Auto Kill");
-                    endOfPathReached = true;
-                    return 0;
-                } else
-                {
-                    this.agentPath.addNodeToPath(currentNode);
+                    preferredNodeNeighbour = 0;
                 }
 
+
+                this.currentNode = blindSearchStep(this.currentNode, preferredNodeNeighbour);
+
+                if (this.currentNode == this.targetNode) // Target reached
+                {
+                    endOfPathReached = true;
+                    this.pathCost = this.agentPath.getPathCost();
+                    return 255; // Writes Path as a white line
+                }
+                else if (this.currentNode.heightValue < 0) // Path can continue
+                {
+                    endOfPathReached = true;
+                    this.pathCost = this.agentPath.getPathCost();
+                    return 0; // Writes Path as a black line
+                }
+                else // End of path reached
+                {
+                    this.agentPath.addNodeToPath(this.currentNode);
+                }
             }
-            //Console.WriteLine("Path Complete");
+
+            this.pathCost = this.agentPath.getPathCost();
+
             return 0;
 
         }
@@ -66,94 +85,62 @@ namespace BEng_Individual_Project.src
         /**
          * Method to move the agent forward one step to a suitable neighbour node
          */
-        public DataNode blindSearchStep(DataNode startNode)
+        public DataNode blindSearchStep(DataNode stepStartNode, int pref)
         {
-            // Check for possible neighbours by selecting all possibilities
-            // that aren't obstacle Nodes
-            List<DataNode> potentialneighbours = new List<DataNode>();
-            potentialneighbours = checkForObstacles(startNode);
+            // Initialise new list to store all potential neighbours
+            List<DataNode> potentialneighbours;
 
-            //Console.WriteLine("After Obstacles: " + potentialneighbours.Count);
+            // Pre-determine preferred Node
+            // TODO: use Trig to calcualte actual preferred node
+            DataNode preferredNode = stepStartNode.neighbourNodes[pref];
+
+            // Check for possible neighbours by selecting all possibilities that aren't obstacle Nodes
+            potentialneighbours = checkForObstacles(stepStartNode);
 
             // Remove all nodes from the list that are already in the agent's path
-            potentialneighbours = removeExistingNodes(potentialneighbours);
-
-            //Console.WriteLine("After Remove Existing: " + potentialneighbours.Count);
+            //potentialneighbours = removeExistingNodes(potentialneighbours); ---- // STUART - This method has been removed as deemed unecessary
 
             // Remove any nodes that will trap the agent in one location
-            potentialneighbours = removeEntrappingNodes(potentialneighbours);
+           potentialneighbours = removeEntrappingNodes(potentialneighbours);
 
-            //Console.WriteLine("After entrapment: " + potentialneighbours.Count);
 
-            potentialneighbours.Reverse();
+            // Actions to add randomness to the potential neighbours list
+            potentialneighbours.Reverse(); // Built in List method
+            //potentialneighbours = ListShuffle.Shuffle(potentialneighbours); // Custom list shuffler -- NB -- BREAKS EVERYTHING
 
-            potentialneighbours = ListShuffle.Shuffle(potentialneighbours);
 
+            // Add in the chance for the algorithm to pick the neighbour that would bring it closest to the target node
+            if (potentialneighbours.Contains(preferredNode))
+            {
+                Random prng = new Random();
+                double chance = prng.NextDouble();
+                if (chance > 0.5) // Chance to select preferred neighbour - 50%
+                {
+                    return preferredNode;
+                }
+            }
+
+            // If preferred neighbour wasn't selected, pick a random neighbour from potential list
             if (potentialneighbours.Count != 0)
             {
                 Random prng = new Random();
-                int selectedNeighbour = prng.Next(0, potentialneighbours.Count - 1);
+                double selectedNeighbour = prng.NextDouble();
 
-                //Console.WriteLine(potentialneighbours.Count);
-                //Console.WriteLine(selectedNeighbour);
-                //Console.WriteLine("-----");
-                
-                return potentialneighbours[selectedNeighbour];
+                selectedNeighbour *= potentialneighbours.Count - 1;
+
+                selectedNeighbour = Math.Floor(selectedNeighbour);
+
+                int selectedNeighbourIndex = (int)selectedNeighbour;
+
+                return potentialneighbours[selectedNeighbourIndex];
             }
 
-            
 
+            // Agent reaches the end of the path and no further options are available
+            // Return end of path node
             DataNode endOfPath = new DataNode(-3, -3, -3);
             return endOfPath;
 
-        }
-
-
-        /**
-         * Check if the potential neighbours already exits in the path
-         */
-         private List<DataNode> removeExistingNodes(List<DataNode> inputNodes)
-
-        {
-
-            List<DataNode> potentialNeighbours = inputNodes;
-
-
-            for (int i = 0; i < potentialNeighbours.Count; i++)
-            {
-                if (this.agentPath.checkForExistingNode(potentialNeighbours[i]))
-                {
-                    //Console.WriteLine("NeighbourCountBeforeRemove: " + potentialNeighbours.Count);
-                    //Console.WriteLine("Item Exists In Path");
-                    potentialNeighbours.Remove(potentialNeighbours[i]);
-                    //Console.WriteLine("NeighbourCountAfterRemove: " + potentialNeighbours.Count);
-                }
-            }
-
-            return potentialNeighbours;
-        }
-
-        /**
-         * Remove chance for entrapment
-         */
-         private List<DataNode> removeEntrappingNodes(List<DataNode> inputNodes)
-        {
-
-            List<DataNode> potentialNodes = inputNodes;
-            for (int i = 0; i < potentialNodes.Count; i++)
-            {
-                // Build a new potential neighbour list from the node
-                // that is being checked's neighbours. An empty list will mean
-                // the node would cause entrappment
-                List<DataNode> entrappmentCheckNeighbours = checkForObstacles(potentialNodes[i]);
-                entrappmentCheckNeighbours = removeExistingNodes(entrappmentCheckNeighbours);
-                if (entrappmentCheckNeighbours.Count == 0)
-                {
-                    potentialNodes.Remove(potentialNodes[i]);
-                }
-            }
-
-            return potentialNodes;
         }
 
         /**
@@ -167,22 +154,69 @@ namespace BEng_Individual_Project.src
         {
             List<DataNode> potentialNeighbours = new List<DataNode>();
 
-            for (int i = 0; i < currentNode.neighbourNodes.Length; i++)
+            for (int i = 0; i < currentNode.neighbourNodes.Length - 1; i++)
             {
                 // Remove any null references for neighbours of edge nodes
-                if(currentNode.neighbourNodes[i] == null)
+                if (currentNode.neighbourNodes[i] == null ||
+                   this.agentPath.checkForExistingNode(currentNode.neighbourNodes[i]) ||  //---- STUART - This line doesn't add the nodes that already exist in the path - Faster Method but paths are always shorter
+                    currentNode.neighbourNodes[i].heightValue < 0)
                 {
                     continue;
                 }
-                // Only add the nodes inside the graph to the list
-                if (currentNode.neighbourNodes[i].heightValue >= 0)
+                else
                 {
                     potentialNeighbours.Add(currentNode.neighbourNodes[i]);
                 }
+
             }
             return potentialNeighbours;
 
         }
+
+
+        /**
+         * Check if the potential neighbours already exits in the path
+         * and removes them if they do
+         * 
+         * Slower method, but allows the paths to be much longer
+         */
+        private List<DataNode> removeExistingNodes(List<DataNode> inputNodes)
+
+        {
+
+            for (int i = 0; i < inputNodes.Count - 1; i++)
+            {
+                if (this.agentPath.checkForExistingNode(inputNodes[i]))
+                {
+                    inputNodes.Remove(inputNodes[i]);
+                    //Console.WriteLine("Remove");
+                }
+            }
+            return inputNodes;
+        }
+
+        /**
+         * Remove chance for entrapment
+         */
+        private List<DataNode> removeEntrappingNodes(List<DataNode> inputNodes)
+        {
+            for (int i = 0; i < inputNodes.Count; i++)
+            {
+                // Build a new potential neighbour list from the node
+                // that is being checked's neighbours. An empty list will mean
+                // the node would cause entrappment
+                List<DataNode> entrappmentCheckNeighbours = checkForObstacles(inputNodes[i]);
+                //entrappmentCheckNeighbours = removeExistingNodes(entrappmentCheckNeighbours); ---- // STUART - This method has been removed as deemed unecessary
+                if (entrappmentCheckNeighbours.Count == 0)
+                {
+                    inputNodes.Remove(inputNodes[i]);
+                }
+            }
+
+            return inputNodes;
+        }
+
+
 
     }
 }

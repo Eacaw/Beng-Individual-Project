@@ -160,25 +160,17 @@ namespace BEng_Individual_Project.src
          */
         public void printGraphToConsole()
         {
-            float[] minMaxValues = minMax.findMinMax(nodesToFloatArray(), this.height, this.width);
+            float[] minMaxValues = numericalUtilities.findMinMax(nodesToFloatArray(), this.height, this.width);
             float minimum = minMaxValues[0], maximum = minMaxValues[1];
 
             for (int i = 0; i < this.height; i++)
             {
                 for (int j = 0; j < this.width; j++)
                 {
-                    Console.Write(Math.Floor(mapValue(terrainNodes[i,j].heightValue, minimum, maximum, 0, 99))+ "\t");
+                    Console.Write(Math.Floor(numericalUtilities.mapValue(terrainNodes[i,j].heightValue, minimum, maximum, 0, 99))+ "\t");
                 }
                 Console.Write("\n");
             }
-        }
-
-        /**
-         * Linearly map values into a new given range
-         */
-        public float mapValue(float value, float initialMin, float initialMax, float newMin, float newMax)
-        {
-            return (newMin + ((value - initialMin) * (newMax - newMin)) / (initialMax - initialMin));
         }
 
         /**
@@ -187,14 +179,14 @@ namespace BEng_Individual_Project.src
          */
          public void increaseGrayscaleMapping()
         {
-            float[] minMaxValues = minMax.findMinMax(this.noiseMap, this.height, this.width);
+            float[] minMaxValues = numericalUtilities.findMinMax(this.noiseMap, this.height, this.width);
             float minimum = minMaxValues[0], maximum = minMaxValues[1];
 
             for (int height = 0; height < this.height; height++)
             {
                 for (int width = 0; width < this.width; width++)
                 {
-                    this.terrainNodes[width, height].setHeightValue(mapValue(this.terrainNodes[width, height].heightValue, minimum, maximum, 50, 255));
+                    this.terrainNodes[width, height].setHeightValue(numericalUtilities.mapValue(this.terrainNodes[width, height].heightValue, minimum, maximum, 50, 255));
                 }
             }
         }

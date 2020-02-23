@@ -6,5 +6,10 @@ namespace BEng_Individual_Project.GA_Methods
 {
     class Crossover
     {
+
+
+
+
+
     }
 }
