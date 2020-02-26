@@ -69,5 +69,22 @@ namespace BEng_Individual_Project.src.Utilities
         }
 
 
+        /**
+         * Get euclidean distance between two nodes
+         */
+        public static float getDistanceBetweenNodes(DataNode start, DataNode end)
+        {
+            int startX = start.getGraphLocation()[0];
+            int startY = start.getGraphLocation()[1];
+            int endX = end.getGraphLocation()[0];
+            int endY = end.getGraphLocation()[1];
+
+            double aSquared = Math.Pow((startX - endX), 2);
+            double bSquared = Math.Pow((startY - endY), 2);
+
+            return (float)Math.Sqrt(aSquared + bSquared);
+        }
+
+
     }
 }

@@ -6,10 +6,14 @@ using BEng_Individual_Project.src.Utilities;
 
 namespace BEng_Individual_Project.src
 {
-    class Agent
+    public class Agent
     {
         public Path agentPath { get; set; }
+
         public float pathCost { get; set; }
+        public bool hitTarget { get; set; }
+        public float riskValue { get; set; }
+        public float distanceFromTarget { get; set; }
 
         DataNode startingNode, targetNode, currentNode;
 
@@ -30,6 +34,8 @@ namespace BEng_Individual_Project.src
             // Add the starting Node to pathway at index 1;
             this.agentPath.addNodeToPath(currentNode);
 
+            this.hitTarget = false;
+
         }
 
 
@@ -40,6 +46,8 @@ namespace BEng_Individual_Project.src
          */
         public int performBlindSearch()
         {
+
+            this.currentNode = this.startingNode;
 
             bool endOfPathReached = false;
 
@@ -56,26 +64,30 @@ namespace BEng_Individual_Project.src
 
                 this.currentNode = blindSearchStep(this.currentNode, preferredNodeNeighbour);
 
+                //TODO: Clean this the fuck up
                 if (this.currentNode == this.targetNode) // Target reached
                 {
                     endOfPathReached = true;
+                    this.agentPath.addNodeToPath(this.currentNode);
                     this.pathCost = this.agentPath.getPathCost();
+                    this.distanceFromTarget = numericalUtilities.getDistanceBetweenNodes(this.agentPath.getFinalNode(), this.targetNode);
                     return 255; // Writes Path as a white line
                 }
-                else if (this.currentNode.heightValue < 0) // Path can continue
+                else if (this.currentNode.heightValue < 0) // Path can no longer continue
                 {
                     endOfPathReached = true;
                     this.pathCost = this.agentPath.getPathCost();
+                    this.distanceFromTarget = numericalUtilities.getDistanceBetweenNodes(this.agentPath.getFinalNode(), this.targetNode);
                     return 0; // Writes Path as a black line
                 }
-                else // End of path reached
+                else // End of path not yet reached
                 {
                     this.agentPath.addNodeToPath(this.currentNode);
                 }
             }
-
+            // Failsafe statements - Never Reached in testing
             this.pathCost = this.agentPath.getPathCost();
-
+            Console.WriteLine("Path Incomplete");
             return 0;
 
         }
@@ -91,7 +103,6 @@ namespace BEng_Individual_Project.src
             List<DataNode> potentialneighbours;
 
             // Pre-determine preferred Node
-            // TODO: use Trig to calcualte actual preferred node
             DataNode preferredNode = stepStartNode.neighbourNodes[pref];
 
             // Check for possible neighbours by selecting all possibilities that aren't obstacle Nodes
@@ -114,7 +125,7 @@ namespace BEng_Individual_Project.src
             {
                 Random prng = new Random();
                 double chance = prng.NextDouble();
-                if (chance > 0.5) // Chance to select preferred neighbour - 50%
+                if (chance > 0.75) // Chance to select preferred neighbour - 50%
                 {
                     return preferredNode;
                 }

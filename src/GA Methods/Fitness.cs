@@ -13,37 +13,47 @@ namespace BEng_Individual_Project.GA_Methods
          * calculate the weighted fitness for the agent
          * ready for sorting and selection
          */
-        public static float calculateWeightedFitness(Agent agent, int pathWeight, int riskWeight, float maxPathLength, float minPathLength)
+        public static float calculateWeightedFitness(Agent agent, int pathWeight, int riskWeight, float maxPathLength, float minPathLength, float maxDistance)
         {
             float Fitness = 0;
+            float maxRisk= 0, minRisk = 0;
 
             Fitness += getFitnessFromPathLength(agent, maxPathLength, minPathLength) * pathWeight;
-            Fitness += getFitnessFromRiskValue(agent) * riskWeight;
-
+            Fitness += getFitnessFromDistanceToTarget(agent, maxDistance);
+            //Fitness += getFitnessFromRiskValue(agent, minRisk, maxRisk) * riskWeight;
 
             return Fitness;
         }
 
+        /**
+         * Map the path length to a value between 0 and 100
+         * to favour lower path lengths
+         */
         private static float getFitnessFromPathLength(Agent agent, float maxPathLength, float minPathLength)
         {
-            // Invert the cost so lower cost = higher fitness
-            float invertPathLength = maxPathLength - agent.pathCost;
-
-            // Map the path length between 0 and 255
-            float fitnessFromPath = numericalUtilities.mapValue(agent.pathCost, minPathLength, maxPathLength, 0, 255);
-
-            return 255 - fitnessFromPath;
-
+            return numericalUtilities.mapValue(agent.pathCost, minPathLength, maxPathLength, 100, 0);
         }
 
-        private static float getFitnessFromRiskValue(Agent agent)
+        /**
+         * Map the distance to target to a value between 0 and 100
+         * favouring shorter distances
+         */
+        private static float getFitnessFromDistanceToTarget(Agent agent, float maxDistance)
         {
-            float fitnessFromRisk = 0;
+            // Multiply the distance from target by 10 in order to give more preference to
+            // those that reached the target, ensuring they are more likely to procreate
+            return numericalUtilities.mapValue(agent.distanceFromTarget * 10, 0, maxDistance, 100, 0);
+        }
 
 
-
-
-            return fitnessFromRisk;
+        /**
+         * Map the risk value to a value between 0 and 100
+         * to favour lower risk values
+         */
+        private static float getFitnessFromRiskValue(Agent agent, float minRiskValue, float maxRiskValue)
+        {
+            // Map the path length between 0 and 255
+            return numericalUtilities.mapValue(agent.riskValue, minRiskValue, maxRiskValue, 100, 0);
         }
 
 

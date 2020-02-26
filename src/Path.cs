@@ -171,6 +171,15 @@ namespace BEng_Individual_Project.src
             }
         }
 
+        /**
+         * returns the final node in the path list
+         */
+         public DataNode getFinalNode()
+        {
+            return this.pathway[this.pathway.Count - 1];
+        }
+
+
         /*
          * returns the integer count of the number of nodes in a pathway
          */

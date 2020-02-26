@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using BEng_Individual_Project.src;
 using BEng_Individual_Project.GA_Methods;
+using BEng_Individual_Project.src.Utilities;
 using System.Linq;
 using System.Text;
 
@@ -24,7 +25,7 @@ namespace BEng_Individual_Project
             float persistance = 1; // Value must be 0-1
 
             // GA Defining Variables
-            int populationSize = 5000;
+            int populationSize = 100000;
 
             // Generate the initial noise map using Simplex Noise
             noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, octaves, scale, lacunarity, persistance);
@@ -56,27 +57,28 @@ namespace BEng_Individual_Project
             {
                 float pathLength = 0;
                 int targetCheck = 0;
-                Agent newAgent = new Agent(graph.terrainNodes[0, 0], graph.terrainNodes[height -2, width -2], graph.getEdgeNode());
+                Agent newAgent = new Agent(graph.terrainNodes[0, 0], graph.terrainNodes[498, 498], graph.getEdgeNode());
                 // Generate a new agent until reasonable path length is achieved
                 while (pathLength < 250)
                 {
-                    //newAgent = new Agent(graph.terrainNodes[0, 0], graph.terrainNodes[205, 498], graph.getEdgeNode());
+                    newAgent = new Agent(graph.terrainNodes[0, 0], graph.terrainNodes[498, 498], graph.getEdgeNode());
                     targetCheck = newAgent.performBlindSearch();
                     pathLength = newAgent.pathCost;
-                    if (pathLength < 150)
+                    if (pathLength < 250)
                     {
                         Console.WriteLine("Repeat");
                     }
                 }
 
-                population.Add(newAgent);
-
-                nonZeroAgents++;
-
                 if (targetCheck == 255)
                 {
                     agentsReachedTargetCount++;
+                    newAgent.hitTarget = true;
                 }
+
+                population.Add(newAgent);
+
+                nonZeroAgents++;
 
                 // Paint the agent's paths
                 population[i].agentPath.paintPathway(targetCheck);
@@ -103,10 +105,14 @@ namespace BEng_Individual_Project
                 }
             }
 
+            //TODO: Create References to starting and target nodes at the top level
+            float maxDistance = numericalUtilities.getDistanceBetweenNodes(graph.terrainNodes[0, 0], graph.terrainNodes[498, 498]);
+            Console.WriteLine("Max Dist: " + maxDistance);
+
             // Calculate the fitness for each agent
             for (int i = 0; i < population.Count; i++)
             {
-                population[i].fitnessScore = Fitness.calculateWeightedFitness(population[i], 1, 0, maxPath, minPath);
+                population[i].fitnessScore = Fitness.calculateWeightedFitness(population[i], 1, 0, maxPath, minPath, maxDistance);
             }
 
             // Order the population by fitness (Hi-Lo)
@@ -117,10 +123,15 @@ namespace BEng_Individual_Project
 
             Console.Write("\n");
             Console.WriteLine("sort time: " + elapsedMS);
-            //for (int i = 0; i < population.Count; i++)
-            //{
-            //    Console.WriteLine("Agent: " + i + "\t fitness: " + population[i].fitnessScore + "\t path: " + population[i].pathCost);
-            //}
+            for (int i = 99900; i < population.Count; i++)
+            {
+                string hitTarget = "Nope";
+                if (population[i].hitTarget)
+                {
+                    hitTarget = "Yep";
+                }
+                Console.WriteLine("Agent: " + i + "\t fit: " + population[i].fitnessScore + "\t path: " + population[i].pathCost + "\t Dist: " + population[i].distanceFromTarget + "\t Hit: " + hitTarget);
+            }
             Console.WriteLine("Agents reached target: " + agentsReachedTargetCount);
 
 
@@ -129,6 +140,18 @@ namespace BEng_Individual_Project
             //// Generate output image including paths
             graph.saveImageOfGraph("../../../OutputImages/PathwayTesting.bmp");
         }
+
+
+
+
+
+
+
+
+
+
+
+
 
         public static void outputVariableTests()
         {
