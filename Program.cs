@@ -18,14 +18,14 @@ namespace BEng_Individual_Project
             // Noise map generation Parameters
             int width = 500; // Value must be divisable by two into an integer
             int height = width; // No idea why I get an out of bounds if the map isn't square. WTF! 
-            int seed = 1337; // RNG seed
+            int seed = 13337; // RNG seed
             int octaves = 8; // Level of details
             float scale = 0.005f; // Bigger scale = Less Terrain details
             int lacunarity = 2; // Value must be > 1
             float persistance = 1; // Value must be 0-1
 
             // GA Defining Variables
-            int populationSize = 100000;
+            int populationSize = 1000;
 
             // Generate the initial noise map using Simplex Noise
             noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, octaves, scale, lacunarity, persistance);
@@ -33,117 +33,142 @@ namespace BEng_Individual_Project
             // Construct the graph and link all the nodes within
             terrainGraph graph = new terrainGraph(height, width, noiseValues);
 
-            // Create the initial Population
-            List<Agent> population = new List<Agent>();
-
-            // Output image of graph without paths
-            //graph.saveImageOfGraph("../../../OutputImages/TerrainImage.bmp");
-
-            // Bring the noise values up so that a black pathway can easily be seen
             graph.increaseGrayscaleMapping();
-            
-            int nonZeroAgents = 0;
-            int agentsReachedTargetCount = 0;
 
-            //src.Path shortestPath = AStarMethod.runAStar(graph.terrainNodes[1, 1], graph.terrainNodes[498, 498],graph);
+            DataNode graphStartNode = graph.terrainNodes[0, 0];
+            DataNode graphTargetNode = graph.terrainNodes[498, 498];
 
-            //shortestPath.paintPathway(0);
+            Agent testAgentOne = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
+            Agent testAgentTwo = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
 
-            string line = "";
+            testAgentOne.performBlindSearch();
+            testAgentTwo.performBlindSearch();
 
+            testAgentOne.agentPath.paintPathway(0);
+            testAgentTwo.agentPath.paintPathway(0);
 
-            // Generate Initial Population and perform intial blind search step
-            for (int i = 0; i < populationSize; i++)
-            {
-                float pathLength = 0;
-                int targetCheck = 0;
-                Agent newAgent = new Agent(graph.terrainNodes[0, 0], graph.terrainNodes[498, 498], graph.getEdgeNode());
-                // Generate a new agent until reasonable path length is achieved
-                while (pathLength < 250)
-                {
-                    newAgent = new Agent(graph.terrainNodes[0, 0], graph.terrainNodes[498, 498], graph.getEdgeNode());
-                    targetCheck = newAgent.performBlindSearch();
-                    pathLength = newAgent.pathCost;
-                    if (pathLength < 250)
-                    {
-                        Console.WriteLine("Repeat");
-                    }
-                }
+            Console.WriteLine("Agent One: Node Count: " + testAgentOne.agentPath.getNodeCount());
+            Console.WriteLine("Agent Two: Node Count: " + testAgentTwo.agentPath.getNodeCount());
 
-                if (targetCheck == 255)
-                {
-                    agentsReachedTargetCount++;
-                    newAgent.hitTarget = true;
-                }
+            matingPartners testMatingSame = new matingPartners(testAgentOne, testAgentOne);
+            matingPartners testMatingDifferent = new matingPartners(testAgentOne, testAgentTwo);
 
-                population.Add(newAgent);
+            Console.WriteLine("Same - mutualNodes: " + Crossover.countMatchingNodes(testMatingSame).Count);
+            Console.WriteLine("Diff - mutualNodes: " + Crossover.countMatchingNodes(testMatingDifferent).Count);
 
-                nonZeroAgents++;
+            graph.saveImageOfGraph("../../../OutputImages/crossoverTesting2.bmp");
 
-                // Paint the agent's paths
-                population[i].agentPath.paintPathway(targetCheck);
-
-                //Progress output
-                string backup = new string('\b', line.Length);
-                Console.Write(backup);
-                line = string.Format("{0} Agents", nonZeroAgents);
-                Console.Write(line);
-            }
-
-            // Find the minimum and maximum path length for mapping
-            float maxPath = 0;
-            float minPath = float.MaxValue;
-            for (int i = 0; i < population.Count; i++)
-            {
-                if (population[i].pathCost > maxPath)
-                {
-                    maxPath = population[i].pathCost;
-                }
-                if (population[i].pathCost < minPath)
-                {
-                    minPath = population[i].pathCost;
-                }
-            }
-
-            //TODO: Create References to starting and target nodes at the top level
-            float maxDistance = numericalUtilities.getDistanceBetweenNodes(graph.terrainNodes[0, 0], graph.terrainNodes[498, 498]);
-            Console.WriteLine("Max Dist: " + maxDistance);
-
-            // Calculate the fitness for each agent
-            for (int i = 0; i < population.Count; i++)
-            {
-                population[i].fitnessScore = Fitness.calculateWeightedFitness(population[i], 1, 0, maxPath, minPath, maxDistance);
-            }
-
-            // Order the population by fitness (Hi-Lo)
-            var agentWatch = System.Diagnostics.Stopwatch.StartNew();
-            population = population.OrderBy(o => o.fitnessScore).ToList();
-            agentWatch.Stop();
-            var elapsedMS = agentWatch.ElapsedMilliseconds;
-
-            Console.Write("\n");
-            Console.WriteLine("sort time: " + elapsedMS);
-            for (int i = 99900; i < population.Count; i++)
-            {
-                string hitTarget = "Nope";
-                if (population[i].hitTarget)
-                {
-                    hitTarget = "Yep";
-                }
-                Console.WriteLine("Agent: " + i + "\t fit: " + population[i].fitnessScore + "\t path: " + population[i].pathCost + "\t Dist: " + population[i].distanceFromTarget + "\t Hit: " + hitTarget);
-            }
-            Console.WriteLine("Agents reached target: " + agentsReachedTargetCount);
-
-
-
-
-            //// Generate output image including paths
-            graph.saveImageOfGraph("../../../OutputImages/PathwayTesting.bmp");
         }
 
 
 
+        //private static void generateInitialPopulationTest()
+        //{
+            
 
+        //    // Create the initial Population
+        //    List<Agent> population = new List<Agent>();
+
+        //    // Output image of graph without paths
+        //    //graph.saveImageOfGraph("../../../OutputImages/TerrainImage.bmp");
+
+        //    // Bring the noise values up so that a black pathway can easily be seen
+        //    graph.increaseGrayscaleMapping();
+
+        //    int nonZeroAgents = 0;
+        //    int agentsReachedTargetCount = 0;
+
+        //    //src.Path shortestPath = AStarMethod.runAStar(graph.terrainNodes[1, 1], graph.terrainNodes[498, 498],graph);
+
+        //    //shortestPath.paintPathway(0);
+
+        //    string line = "";
+
+
+        //    // Generate Initial Population and perform intial blind search step
+        //    for (int i = 0; i < populationSize; i++)
+        //    {
+        //        float pathLength = 0;
+        //        int targetCheck = 0;
+        //        Agent newAgent = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
+        //        // Generate a new agent until reasonable path length is achieved
+        //        while (pathLength < 1)
+        //        {
+        //            newAgent = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
+        //            targetCheck = newAgent.performBlindSearch();
+        //            pathLength = newAgent.pathCost;
+        //        }
+
+        //        if (targetCheck == 255)
+        //        {
+        //            agentsReachedTargetCount++;
+        //            newAgent.hitTarget = true;
+        //        }
+
+        //        population.Add(newAgent);
+
+        //        nonZeroAgents++;
+
+        //        // Paint the agent's paths
+        //        population[i].agentPath.paintPathway(targetCheck);
+
+        //        //Progress output
+        //        string backup = new string('\b', line.Length);
+        //        Console.Write(backup);
+        //        line = string.Format("{0} Agents", nonZeroAgents);
+        //        Console.Write(line);
+        //    }
+
+        //    // Find the minimum and maximum path length for mapping
+        //    float maxPath = 0;
+        //    float minPath = float.MaxValue;
+        //    for (int i = 0; i < population.Count; i++)
+        //    {
+        //        if (population[i].pathCost > maxPath)
+        //        {
+        //            maxPath = population[i].pathCost;
+        //        }
+        //        if (population[i].pathCost < minPath)
+        //        {
+        //            minPath = population[i].pathCost;
+        //        }
+        //    }
+
+        //    //TODO: Create References to starting and target nodes at the top level
+        //    float maxDistance = numericalUtilities.getDistanceBetweenNodes(graph.terrainNodes[0, 0], graph.terrainNodes[498, 498]);
+        //    Console.WriteLine("Max Dist: " + maxDistance);
+
+        //    // Calculate the fitness for each agent
+        //    for (int i = 0; i < population.Count; i++)
+        //    {
+        //        population[i].fitnessScore = Fitness.calculateWeightedFitness(population[i], 1, 0, maxPath, minPath, maxDistance);
+        //    }
+
+        //    // Order the population by fitness (Hi-Lo)
+        //    var agentWatch = System.Diagnostics.Stopwatch.StartNew();
+        //    population = population.OrderBy(o => o.fitnessScore).ToList();
+        //    agentWatch.Stop();
+        //    var elapsedMS = agentWatch.ElapsedMilliseconds;
+
+        //    Console.Write("\n");
+        //    Console.WriteLine("sort time: " + elapsedMS);
+        //    for (int i = 0; i < population.Count; i++)
+        //    {
+        //        string hitTarget = "Nope";
+        //        if (population[i].hitTarget)
+        //        {
+        //            hitTarget = "Yep";
+        //        }
+        //        Console.WriteLine("Agent: " + i + "\t fit: " + population[i].fitnessScore + "\t path: " + population[i].pathCost + "\t Dist: " + population[i].distanceFromTarget + "\t Hit: " + hitTarget);
+        //    }
+        //    Console.WriteLine("Agents reached target: " + agentsReachedTargetCount);
+
+
+
+
+        //    //// Generate output image including paths
+        //    graph.saveImageOfGraph("../../../OutputImages/PathwayTesting.bmp");
+        //}
 
 
 

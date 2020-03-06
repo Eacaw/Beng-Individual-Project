@@ -36,7 +36,7 @@ namespace BEng_Individual_Project.GA_Methods
 
         /**
          * Map the distance to target to a value between 0 and 100
-         * favouring shorter distances
+         * favouring shorter remaining distances
          */
         private static float getFitnessFromDistanceToTarget(Agent agent, float maxDistance)
         {

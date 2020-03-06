@@ -32,10 +32,28 @@ namespace BEng_Individual_Project.src
             // Add the edgeNode to the pathway at index 0;
             this.agentPath.addNodeToPath(edgeNode);
             // Add the starting Node to pathway at index 1;
-            this.agentPath.addNodeToPath(currentNode);
+            this.agentPath.addNodeToPath(this.currentNode);
 
             this.hitTarget = false;
 
+        }
+
+        // Overload method to create child agent from parent agent
+        // avoids the need to pass references to special nodes
+        public Agent(Agent parentAgent, Path newPath)
+        {
+            this.startingNode = parentAgent.startingNode;
+            this.targetNode = parentAgent.targetNode;
+            this.currentNode = this.startingNode;
+
+            this.agentPath = newPath;
+
+            // Add edge node to the pathway at index 0
+            this.agentPath.addNodeToPath(parentAgent.agentPath.getNodeFromIndex(0));
+            // Add the starting node to pathway at index 1
+            this.agentPath.addNodeToPath(this.currentNode);
+
+            this.hitTarget = false;
         }
 
 
@@ -108,24 +126,18 @@ namespace BEng_Individual_Project.src
             // Check for possible neighbours by selecting all possibilities that aren't obstacle Nodes
             potentialneighbours = checkForObstacles(stepStartNode);
 
-            // Remove all nodes from the list that are already in the agent's path
-            //potentialneighbours = removeExistingNodes(potentialneighbours); ---- // STUART - This method has been removed as deemed unecessary
-
             // Remove any nodes that will trap the agent in one location
            potentialneighbours = removeEntrappingNodes(potentialneighbours);
 
-
             // Actions to add randomness to the potential neighbours list
             potentialneighbours.Reverse(); // Built in List method
-            //potentialneighbours = ListShuffle.Shuffle(potentialneighbours); // Custom list shuffler -- NB -- BREAKS EVERYTHING
-
 
             // Add in the chance for the algorithm to pick the neighbour that would bring it closest to the target node
             if (potentialneighbours.Contains(preferredNode))
             {
                 Random prng = new Random();
                 double chance = prng.NextDouble();
-                if (chance > 0.75) // Chance to select preferred neighbour - 50%
+                if (chance > 0.75) // Chance to select preferred neighbour - DEFAULT: 25% (Value set to 0.75%)
                 {
                     return preferredNode;
                 }
@@ -169,8 +181,8 @@ namespace BEng_Individual_Project.src
             {
                 // Remove any null references for neighbours of edge nodes
                 if (currentNode.neighbourNodes[i] == null ||
-                   this.agentPath.checkForExistingNode(currentNode.neighbourNodes[i]) ||  //---- STUART - This line doesn't add the nodes that already exist in the path - Faster Method but paths are always shorter
-                    currentNode.neighbourNodes[i].heightValue < 0)
+                   this.agentPath.checkForExistingNode(currentNode.neighbourNodes[i]) || 
+                                        currentNode.neighbourNodes[i].heightValue < 0)
                 {
                     continue;
                 }
@@ -184,27 +196,6 @@ namespace BEng_Individual_Project.src
 
         }
 
-
-        /**
-         * Check if the potential neighbours already exits in the path
-         * and removes them if they do
-         * 
-         * Slower method, but allows the paths to be much longer
-         */
-        private List<DataNode> removeExistingNodes(List<DataNode> inputNodes)
-
-        {
-
-            for (int i = 0; i < inputNodes.Count - 1; i++)
-            {
-                if (this.agentPath.checkForExistingNode(inputNodes[i]))
-                {
-                    inputNodes.Remove(inputNodes[i]);
-                    //Console.WriteLine("Remove");
-                }
-            }
-            return inputNodes;
-        }
 
         /**
          * Remove chance for entrapment

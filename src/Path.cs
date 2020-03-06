@@ -188,6 +188,17 @@ namespace BEng_Individual_Project.src
             return this.pathway.Count;
         }
 
+        // Return the pathway as a List
+        public List<DataNode> getPathway()
+        {
+            return this.pathway;
+        }
+
+        // Return a specified node at given index in path
+        public DataNode getNodeFromIndex(int index)
+        {
+            return this.pathway[index];
+        }
 
     }
 }
