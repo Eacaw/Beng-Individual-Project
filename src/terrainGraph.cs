@@ -7,7 +7,7 @@ using BEng_Individual_Project.src.Utilities;
 
 namespace BEng_Individual_Project.src
 {
-    class terrainGraph
+    public class terrainGraph
     {
         public DataNode[,] terrainNodes;
         private float[,] noiseMap;
@@ -215,6 +215,20 @@ namespace BEng_Individual_Project.src
          */
          public void saveImageOfGraph(string filename)
         {
+            // Only upon saving the image of the terrain does the pathways change the height value
+            for (int i = 0; i < this.height; i++)
+            {
+                for (int j = 0; j < this.width; j++)
+                {
+                    if (this.terrainNodes[i, j].heightValue > 0)
+                    {
+                        this.terrainNodes[i, j].heightValue = this.terrainNodes[i, j].paintValue;
+                    } else
+                    {
+                        this.terrainNodes[i, j].heightValue = 600;
+                    }
+                }
+            }
             bitmapSaving.generateOutputImage(filename, this.width, this.height, nodesToFloatArray());
         }
 

@@ -50,7 +50,7 @@ namespace BEng_Individual_Project.GA_Methods
             childPath.addNodeToPath(parentBPath[0]);
 
             // Add the first half of the path from parent A
-            for (int i = 0; i < crossoverIndex + 1; i++)
+            for (int i = 1; i < crossoverIndex + 1; i++)
             {
                 childPath.addNodeToPath(parentAPath[i]);
             }
@@ -62,7 +62,7 @@ namespace BEng_Individual_Project.GA_Methods
             }
 
             // Create the child agent
-            Agent childAgent = new Agent(parents.getParentA(), childPath);
+            Agent childAgent = new Agent(parents.getParentA(), childPath); 
 
             return childAgent;
         }
@@ -70,7 +70,9 @@ namespace BEng_Individual_Project.GA_Methods
         private static Agent doublePointCrossover(matingPartners parents)
         {
 
+            Agent childAgent = new Agent(parents.getParentA(), parents.getParentA().agentPath);
 
+            return childAgent;
         }
 
 

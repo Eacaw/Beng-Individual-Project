@@ -109,7 +109,8 @@ namespace BEng_Individual_Project.src
         {
             for (int i = 0; i < this.pathway.Count; i++)
             {
-                this.pathway[i].setHeightValue(heightValueToPaint);
+                this.pathway[i].paintValue = (float) heightValueToPaint;
+                this.pathway[i].traversedCounter++;
             }
         }
 

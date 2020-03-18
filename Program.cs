@@ -35,28 +35,72 @@ namespace BEng_Individual_Project
 
             graph.increaseGrayscaleMapping();
 
+            for(int i = 0; i < 20; i++)
+            {
+                graph = Obstacle.addObstacletoGraph(graph, 25, 25);
+            }
+
+            //for(int i = 100; i < 200; i++)
+            //{
+            //    for ( int j = 100; j < 200; j++)
+            //    {
+            //        graph.terrainNodes[i, j].heightValue = -2;
+            //    }
+            //}
+
+            //for (int i = 300; i < 400; i++)
+            //{
+            //    for (int j = 300; j < 400; j++)
+            //    {
+            //        graph.terrainNodes[i, j].heightValue = -2;
+            //    }
+            //}
+
             DataNode graphStartNode = graph.terrainNodes[0, 0];
             DataNode graphTargetNode = graph.terrainNodes[498, 498];
 
-            Agent testAgentOne = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
-            Agent testAgentTwo = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
+            generateInitialPopulation(graph, 100);
 
-            testAgentOne.performBlindSearch();
-            testAgentTwo.performBlindSearch();
 
-            testAgentOne.agentPath.paintPathway(0);
-            testAgentTwo.agentPath.paintPathway(0);
+            //Agent testAgentOne = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
+            //Agent testAgentTwo = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
 
-            Console.WriteLine("Agent One: Node Count: " + testAgentOne.agentPath.getNodeCount());
-            Console.WriteLine("Agent Two: Node Count: " + testAgentTwo.agentPath.getNodeCount());
+            //testAgentOne.agentPath = src.GAMethods.BlindSearch.performBlindSearch(testAgentOne);
+            //testAgentTwo.agentPath = src.GAMethods.BlindSearch.performBlindSearch(testAgentTwo);
 
-            matingPartners testMatingSame = new matingPartners(testAgentOne, testAgentOne);
-            matingPartners testMatingDifferent = new matingPartners(testAgentOne, testAgentTwo);
+            //testAgentOne.agentPath.paintPathway(0);
+            //testAgentTwo.agentPath.paintPathway(0);
+            //float remainingDistance = float.MaxValue;
+            //Path nodeTestPath = new Path();
+            //int count = 0;
+            ////while (remainingDistance != 0)
+            ////{
+            //    nodeTestPath = src.GAMethods.BlindSearch.performBlindSearch(graph.terrainNodes[450, 50], graph.terrainNodes[50, 450]);
+            //    remainingDistance = numericalUtilities.getDistanceBetweenNodes(nodeTestPath.getFinalNode(), graph.terrainNodes[50, 450]);
+            //    count++;
+            ////}
+            //nodeTestPath.paintPathway(500);
+            //if (remainingDistance == 0)
+            //{
+            //    Console.WriteLine("Target Reached");
+            //}
+            //else
+            //{
+            //    Console.WriteLine("Distance: " + remainingDistance);
+            //}
 
-            Console.WriteLine("Same - mutualNodes: " + Crossover.countMatchingNodes(testMatingSame).Count);
-            Console.WriteLine("Diff - mutualNodes: " + Crossover.countMatchingNodes(testMatingDifferent).Count);
+            //Console.WriteLine("Blind Search Iterations Taken: " + count);
 
-            graph.saveImageOfGraph("../../../OutputImages/crossoverTesting2.bmp");
+            //Console.WriteLine("Agent One: Node Count: " + testAgentOne.agentPath.getNodeCount());
+            //Console.WriteLine("Agent Two: Node Count: " + testAgentTwo.agentPath.getNodeCount());
+
+            //matingPartners testMatingSame = new matingPartners(testAgentOne, testAgentOne);
+            //matingPartners testMatingDifferent = new matingPartners(testAgentOne, testAgentTwo);
+
+            //Console.WriteLine("Same - mutualNodes: " + Crossover.countMatchingNodes(testMatingSame).Count);
+            //Console.WriteLine("Diff - mutualNodes: " + Crossover.countMatchingNodes(testMatingDifferent).Count);
+
+            graph.saveImageOfGraph("../../../OutputImages/ObstacleTesting3.bmp");
 
         }
 
@@ -171,13 +215,6 @@ namespace BEng_Individual_Project
         //}
 
 
-
-
-
-
-
-
-
         public static void outputVariableTests()
         {
 
@@ -217,9 +254,7 @@ namespace BEng_Individual_Project
             //}
         }
 
-
-
-        public static void testBlindSearch(terrainGraph graph)
+        public static List<Agent> generateInitialPopulation(terrainGraph graph, int populationSize)
         {
             int width = 500;
             int height = width;
@@ -232,36 +267,35 @@ namespace BEng_Individual_Project
             int prevAgentCount = 0;
             float totalPath = 0;
 
+            DataNode graphStartNode = graph.terrainNodes[0, 0];
+            DataNode graphTargetNode = graph.terrainNodes[498, 498];
+
+            List<Agent> population = new List<Agent>();
+
+            string line = "";
+
             //Run the simulation 100 times
-            while (nonZeroAgents < 1000)
+            while (nonZeroAgents < populationSize)
             {
                 // Start Stopwatch
+                // measureing time taken to perform blind search
                 var agentWatch = System.Diagnostics.Stopwatch.StartNew();
 
                 // Generate new Agent for testing
-                Agent testAgent = new Agent(graph.terrainNodes[0, 0], graph.terrainNodes[width - 1, height - 1], graph.getEdgeNode());
-
-                // Perform Search
-                int output = testAgent.performBlindSearch();
-                if (output == 255)
-                {
-                    agentsReachedTargetCount++;
-                }
+                Agent testAgent = new Agent(graph.terrainNodes[0, 0], graph.terrainNodes[width - 2, height - 2], graph.getEdgeNode());
+                // Generate Path for new agent
+                testAgent.agentPath = src.GAMethods.BlindSearch.performBlindSearch(testAgent);
 
                 // Stop stopwatch
                 agentWatch.Stop();
 
                 // Report on the cost of the path
-                if (testAgent.agentPath.getPathCost() > 500)
+                if (testAgent.agentPath.getPathCost() > 100)
                 {
-                    //Console.WriteLine("Agent " + agentCount);
-                    //Console.WriteLine("Path Cost: " + testAgent.agentPath.getPathCost());
+                    population.Add(testAgent);
                     nonZeroAgents++;
 
                     totalPath += testAgent.agentPath.getPathCost();
-
-                    // Paint pathway to graph
-                    testAgent.agentPath.paintPathway(output);
 
                     // Add the agent's time to total for averaging
                     // Only add agents that didn't instantly die to total
@@ -272,16 +306,32 @@ namespace BEng_Individual_Project
 
                     }
 
-                    //Output time taken
-
-                    //Console.WriteLine("Time taken: " + (int)elapsedMS);
-
-
-
                 }
-                agentCount++;
+
+                //Progress output
+                string backup = new string('\b', line.Length);
+                Console.Write(backup);
+                line = string.Format("{0} Agents", nonZeroAgents);
+                Console.Write(line);
             }
-            // Output average time per agent
+
+            // Calculate the distance from the target for each agent
+            // Then paint the pathway for each of the agents
+            for (int i = 0; i < population.Count; i++)
+            {
+                population[i].findDistanceToTarget();
+
+                if (population[i].distanceFromTarget > 0)
+                {
+                    population[i].agentPath.paintPathway(0);
+                    
+                } else
+                {
+                    population[i].agentPath.paintPathway(600);
+                    agentsReachedTargetCount += 1;
+                }
+            }
+
             Console.Write("\n");
             totalPath /= nonZeroAgents;
 
@@ -289,6 +339,8 @@ namespace BEng_Individual_Project
             Console.WriteLine("Average per agent: " + totalAgentTime / nonZeroAgents);
             Console.WriteLine("Agents that reached Target: " + agentsReachedTargetCount);
             Console.WriteLine("Total Computing Time: " + totalAgentTime / 1000 + " seconds");
+
+            return population;
         }
     }
 

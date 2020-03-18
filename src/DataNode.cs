@@ -9,7 +9,10 @@ namespace BEng_Individual_Project.src
         public DataNode[] neighbourNodes = new DataNode[8]; // Max Neighbours is 8 using NW -> W clockwise
         public float heightValue { get; set; }
         int[] graphPosition = new int[2];
-        float hostileRiskValue;
+        public float hostileRiskValue { get; set; }
+
+        public int traversedCounter { get; set; }
+        public float paintValue { get; set; } 
 
 
         // Variables used for the A* algorithm
@@ -29,6 +32,8 @@ namespace BEng_Individual_Project.src
             this.graphPosition[0] = xPosition;
             this.graphPosition[1] = yPosition;
             this.hostileRiskValue = 0;
+
+            this.paintValue = heightValue;
         }
 
         /**
