@@ -35,7 +35,7 @@ namespace BEng_Individual_Project
 
             graph.increaseGrayscaleMapping();
 
-            for(int i = 0; i < 20; i++)
+            for(int i = 0; i < 50; i++)
             {
                 graph = Obstacle.addObstacletoGraph(graph, 25, 25);
             }
