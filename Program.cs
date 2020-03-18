@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using BEng_Individual_Project.src;
-using BEng_Individual_Project.GA_Methods;
 using BEng_Individual_Project.src.Utilities;
 using System.Linq;
 using System.Text;
+using BEng_Individual_Project.src.GAMethods;
+using BEng_Individual_Project.GA_Methods;
 
 namespace BEng_Individual_Project
 {
@@ -14,6 +15,9 @@ namespace BEng_Individual_Project
         {
             // GA Defining Variables
             int populationSize = 100;
+            int topScore = 0;// populationSize - 1;
+
+            int mutationPercentage = 2;
 
             // Construct the graph and link all the nodes within
             terrainGraph graph = new terrainGraph();
@@ -23,29 +27,80 @@ namespace BEng_Individual_Project
             DataNode graphStartNode = graph.terrainNodes[0, 0];
             DataNode graphTargetNode = graph.terrainNodes[498, 498];
 
-            Agent mutationAgent = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
-            mutationAgent.agentPath = src.GAMethods.BlindSearch.performBlindSearch(mutationAgent);
-            mutationAgent.agentPath.paintPathway(0);
-            Mutation.mutatePathWithoutLimit(mutationAgent, 100);
-            mutationAgent.agentPath.paintPathway(500);
-
-            graph.saveImageOfGraph("../../../OutputImages/MutationTesting.bmp");
-
-
-            //// Add obstacles to the terrain
-            //for (int i = 0; i < 50; i++)
-            //{
-            //    graph = Obstacle.addObstacletoGraph(graph, 25, 25);
-            //}
+            // Max distance used for mapping the values in the fitness function
+            float maxDistance = numericalUtilities.getDistanceBetweenNodes(graphStartNode, graphTargetNode);
 
             // Generate the initial Population
-            //generateInitialPopulationTest(graph, populationSize);
+            List<Agent> population = generateInitialPopulation(graph, populationSize, maxDistance);
+            matingPool breedingPool;
+            // Do 100 generations test
+            for (int i = 0; i < 100; i++)
+            {
+                // Clear the mating pool
+                breedingPool = new matingPool();
+
+                // Use linear roulette selection
+                breedingPool.linearRouletteSelectionFitness(population);
+
+                // Clear the current population list
+                population = new List<Agent>();
+
+                // Produce the next generation for the population
+                for (int j = 0; j < populationSize; j++)
+                {
+                    matingPartners parentSelection = Selection.randomSelectionFromPool(breedingPool);
+                    Agent childAgent = Crossover.performCrossover(parentSelection);
+                    childAgent = Mutation.mutatePathWithoutLimit(childAgent, mutationPercentage);
+                    childAgent.pathCost = childAgent.agentPath.getPathCost();
+                    childAgent.findDistanceToTarget();
+                    population.Add(childAgent);
+                }
+                // Find the minimum and maximum path length for mapping
+                float maxPath = 0;
+                float minPath = float.MaxValue;
+                for (int k = 0; k < population.Count; k++)
+                {
+                    if (population[k].pathCost > maxPath)
+                    {
+                        maxPath = population[k].pathCost;
+                    }
+                    if (population[k].pathCost < minPath)
+                    {
+                        minPath = population[k].pathCost;
+                    }
+                }
+
+                // Calculate the fitness for each agent
+                for (int k = 0; k < population.Count; k++)
+                {
+                    population[k].fitnessScore = Fitness.calculateWeightedFitness(population[k], 1, 0, maxPath, minPath, maxDistance);
+                }
+
+                // Order the population by fitness (Lo-Hi)
+                population = population.OrderBy(o => o.fitnessScore).ToList();
+
+                if (population[topScore].distanceFromTarget == 0)
+                {
+                    population[topScore].hitTarget = true;
+                }
+
+                
+                string hitTarget = "Nope";
+                if (population[topScore].hitTarget)
+                {
+                    hitTarget = "Yep";
+                }
+                Console.WriteLine("Generation: " + i + "\t fit: " + population[topScore].fitnessScore + 
+                                    "\t path: " + population[topScore].pathCost + "\t Dist: " + 
+                                        population[topScore].distanceFromTarget + "\t Hit: " + hitTarget);
+            }
+
 
         }
 
 
 
-        private static List<Agent> generateInitialPopulationTest(terrainGraph graph, int populationSize)
+        private static List<Agent> generateInitialPopulation(terrainGraph graph, int populationSize, float maxDistance)
         {
             // Create the initial Population
             List<Agent> population = new List<Agent>();
@@ -72,7 +127,7 @@ namespace BEng_Individual_Project
                 while (pathCostCheck < 1)
                 {
                     newAgent = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
-                    newAgent.agentPath = src.GAMethods.BlindSearch.performBlindSearch(newAgent);
+                    newAgent.agentPath = BlindSearch.performBlindSearch(newAgent);
                     newAgent.pathCost = newAgent.agentPath.getPathCost();
                     pathCostCheck = newAgent.pathCost;
                 }
@@ -90,13 +145,13 @@ namespace BEng_Individual_Project
                 nonZeroAgents++;
 
                 // Paint the agent's paths
-                if (newAgent.hitTarget)
-                {
-                    newAgent.agentPath.paintPathway(255);
-                } else
-                {
-                    newAgent.agentPath.paintPathway(0);
-                }
+                //if (newAgent.hitTarget)
+                //{
+                //    newAgent.agentPath.paintPathway(255);
+                //} else
+                //{
+                //    newAgent.agentPath.paintPathway(0);
+                //}
 
                 //Progress output
                 string backup = new string('\b', line.Length);
@@ -104,6 +159,7 @@ namespace BEng_Individual_Project
                 line = string.Format("{0} Agents", nonZeroAgents);
                 Console.Write(line);
             }
+
 
             // Find the minimum and maximum path length for mapping
             float maxPath = 0;
@@ -120,10 +176,6 @@ namespace BEng_Individual_Project
                 }
             }
 
-            // Max distance used for mapping the values in the fitness function
-            float maxDistance = numericalUtilities.getDistanceBetweenNodes(graphStartNode, graphTargetNode);
-            Console.WriteLine("Max Dist: " + maxDistance);
-
             // Calculate the fitness for each agent
             for (int i = 0; i < population.Count; i++)
             {
@@ -131,14 +183,12 @@ namespace BEng_Individual_Project
             }
 
             // Order the population by fitness (Hi-Lo)
-            var agentWatch = System.Diagnostics.Stopwatch.StartNew();
             population = population.OrderBy(o => o.fitnessScore).ToList();
-            agentWatch.Stop();
-            var elapsedMS = agentWatch.ElapsedMilliseconds;
+
+
 
             // Output the top 10 agents details
             Console.Write("\n");
-            Console.WriteLine("sort time: " + elapsedMS);
             for (int i = population.Count - 10; i < population.Count; i++)
             {
                 string hitTarget = "Nope";
@@ -151,7 +201,7 @@ namespace BEng_Individual_Project
             Console.WriteLine("Agents reached target: " + agentsReachedTargetCount);
 
             //// Generate output image including paths
-            graph.saveImageOfGraph("../../../OutputImages/InitialPopulationTesting.bmp");
+            //graph.saveImageOfGraph("../../../OutputImages/InitialPopulationTesting.bmp");
 
             return population;
         }
@@ -196,7 +246,7 @@ namespace BEng_Individual_Project
             //}
         }
 
-        public static List<Agent> generateInitialPopulation(terrainGraph graph, int populationSize)
+        public static List<Agent> testBlindSearch(terrainGraph graph, int populationSize)
         {
             int width = 500;
             int height = width;
@@ -259,20 +309,20 @@ namespace BEng_Individual_Project
 
             // Calculate the distance from the target for each agent
             // Then paint the pathway for each of the agents
-            for (int i = 0; i < population.Count; i++)
-            {
-                population[i].findDistanceToTarget();
+            //for (int i = 0; i < population.Count; i++)
+            //{
+            //    population[i].findDistanceToTarget();
 
-                if (population[i].distanceFromTarget > 0)
-                {
-                    population[i].agentPath.paintPathway(0);
+            //    if (population[i].distanceFromTarget > 0)
+            //    {
+            //        population[i].agentPath.paintPathway(0);
                     
-                } else
-                {
-                    population[i].agentPath.paintPathway(600);
-                    agentsReachedTargetCount += 1;
-                }
-            }
+            //    } else
+            //    {
+            //        population[i].agentPath.paintPathway(600);
+            //        agentsReachedTargetCount += 1;
+            //    }
+            //}
 
             Console.Write("\n");
             totalPath /= nonZeroAgents;
@@ -283,6 +333,47 @@ namespace BEng_Individual_Project
             Console.WriteLine("Total Computing Time: " + totalAgentTime / 1000 + " seconds");
 
             return population;
+        }
+
+        private static List<Agent> sortPopulationByFitness(List<Agent> population, float maxDistance)
+        {
+
+            // Find the minimum and maximum path length for mapping
+            float maxPath = 0;
+            float minPath = float.MaxValue;
+            for (int i = 0; i < population.Count; i++)
+            {
+                if (population[i].pathCost > maxPath)
+                {
+                    maxPath = population[i].pathCost;
+                }
+                if (population[i].pathCost < minPath)
+                {
+                    minPath = population[i].pathCost;
+                }
+            }
+
+            // Calculate the fitness for each agent
+            for (int i = 0; i < population.Count; i++)
+            {
+                population[i].fitnessScore = Fitness.calculateWeightedFitness(population[i], 1, 0, maxPath, minPath, maxDistance);
+            }
+
+            // Order the population by fitness (Hi-Lo)
+            population = population.OrderBy(o => o.fitnessScore).ToList();
+
+            return population;
+        }
+
+        private static terrainGraph addObstaclesToGraph(int obstacleCount, terrainGraph graph)
+        {
+            obstacleCount++;
+            //Add obstacles to the terrain
+            for (int i = 0; i < obstacleCount; i++)
+            {
+                graph = Obstacle.addObstacletoGraph(graph, 25, 25);
+            }
+            return graph;
         }
     }
 
