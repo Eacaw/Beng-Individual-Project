@@ -18,11 +18,29 @@ namespace BEng_Individual_Project.src
         /**
          * Terrain Graph Constructor
          */
-        public terrainGraph(int height, int width, float[,] noiseMap)
+        public terrainGraph()
         {
+            // Initial Noise Values
+            float[,] noiseValues;
+
+            // Noise map generation Parameters
+            int width = 500; // Value must be divisable by two into an integer
+            int height = width; // No idea why I get an out of bounds if the map isn't square. WTF! 
+            int seed = 13337; // RNG seed
+            int octaves = 8; // Level of details
+            float scale = 0.005f; // Bigger scale = Less Terrain details
+            int lacunarity = 2; // Value must be > 1
+            float persistance = 1; // Value must be 0-1
+
+            // GA Defining Variables
+            int populationSize = 100;
+
+            // Generate the initial noise map using Simplex Noise
+            noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, octaves, scale, lacunarity, persistance);
+
             this.height = height;
             this.width = width;
-            this.noiseMap = noiseMap;
+            this.noiseMap = noiseValues;
             this.terrainNodes = new DataNode[width, height];
             this.edgeNode = new DataNode(-1,-1,-1);
 

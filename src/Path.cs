@@ -52,6 +52,15 @@ namespace BEng_Individual_Project.src
             return this.pathway.Count;
         }
 
+
+        /**
+         * Get the index of any given node in the path
+         */
+         public int getNodeIndex(DataNode nodeForLocating)
+        {
+            return this.pathway.IndexOf(nodeForLocating);
+        }
+
         /**
          * Check if node is in path already
          */
@@ -199,6 +208,76 @@ namespace BEng_Individual_Project.src
         public DataNode getNodeFromIndex(int index)
         {
             return this.pathway[index];
+        }
+
+        /**
+         * Get the cost of a section of path between two given nodes
+         */
+         public float getSectionCost(DataNode start, DataNode end)
+        {
+            float sectionCost = 0;
+
+            if (!this.pathway.Contains(start) || !this.pathway.Contains(end))
+            {
+                return -1; // Nodes are not contained within the pathway
+            }
+
+            int startIndex = this.pathway.IndexOf(start);
+            int endIndex = this.pathway.IndexOf(end);
+
+            for(int i = startIndex; i < endIndex; i++)
+            {
+                float tempCost = this.pathway[i].getCostValue(this.pathway[i + 1]);
+                if (tempCost != -1) // Cost value of -1 means edge node has been found
+                {
+                    sectionCost += tempCost;
+                }
+                else
+                {
+                    break; // Break out of loop to avoid out of bounds error.
+                }
+            }
+            return sectionCost;
+        }
+
+        /**
+         * splice in a section of path into an existing pathway
+         */
+         public void splicePathSections(Path replacementPath)
+        {
+            DataNode startOfReplacement = replacementPath.pathway[0];
+            DataNode endOfReplacement = replacementPath.getFinalNode();
+
+            //replacementPath.paintPathway(0);
+
+            if (this.pathway.Contains(startOfReplacement) && this.pathway.Contains(endOfReplacement))
+                // Check to ensure that the replacement will fit into the existing pathway before splicing
+            {
+                int startIndex = this.pathway.IndexOf(startOfReplacement);
+                int endIndex = this.pathway.IndexOf(endOfReplacement);
+
+                // Store everything from the old path after the second breakaway point
+                List<DataNode> endOfOldPath = new List<DataNode>();
+                for(int i = endIndex; i < this.pathway.Count; i++)
+                {
+                    endOfOldPath.Add(this.pathway[i]);
+                }
+
+                // Remove the old path from the first breakaway point 
+                this.pathway.RemoveRange(startIndex, this.pathway.Count - startIndex);
+
+                // Concatenate the three parts of the path back together
+                this.pathway.AddRange(replacementPath.pathway);
+                this.pathway.AddRange(endOfOldPath);
+
+
+            } else
+            {
+                Console.WriteLine("Replacement Path does not fit into existing path, check code routing");
+            }
+
+
+
         }
 
     }

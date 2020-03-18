@@ -9,6 +9,31 @@ namespace BEng_Individual_Project.GA_Methods
     public static class Crossover
     {
 
+
+        /**
+         * Top level crossover method
+         * will check the number of matching nodes before
+         * selecting the most appropriate crossover method 
+         * for the mating partners it is given
+         */
+         public static Agent performCrossover(matingPartners parentAgents)
+        {
+            List<int> crossoverPointIndecies = countMatchingNodes(parentAgents);
+
+            if (crossoverPointIndecies.Count == 0)
+            {
+                return parentAgents.getParentA();
+            }
+
+            Random prng = new Random();
+
+            int crossoverPoint = prng.Next(0, crossoverPointIndecies.Count);
+
+            return singlePointCrossover(parentAgents, crossoverPoint);
+
+
+        }
+
         /**
          * Find the indecies for all of the crossover points between two
          * paths, ignoring the first two nodes in a path. 

@@ -10,7 +10,7 @@ namespace BEng_Individual_Project.src.GAMethods
     {
         /**
          * Overload Method that accepts an Agent as parameter
-         * Use only when performing the initial blind search
+         * Used only when performing the initial blind search
          */
          public static Path performBlindSearch(Agent agentInstance)
         {
@@ -19,8 +19,8 @@ namespace BEng_Individual_Project.src.GAMethods
 
 
         /**
-         * Perform full blind search algorithm to generate
-         * initial population of agents
+         * Perform full blind search algorithm to generate a path
+         * used both for initial population and mutation
          */
         public static Path performBlindSearch(DataNode startingNode, DataNode targetNode)
         {
@@ -28,6 +28,9 @@ namespace BEng_Individual_Project.src.GAMethods
             DataNode currentNode = startingNode;
 
             Path blindSearchPath = new Path();
+
+            blindSearchPath.addNodeToPath(startingNode);
+
             float pathCost = 0;
 
             bool endOfPathReached = false;
