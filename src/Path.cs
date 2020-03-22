@@ -280,5 +280,22 @@ namespace BEng_Individual_Project.src
 
         }
 
+
+        public void removeFinalTwoNodes()
+        {
+            bool removeNode = true;
+
+            while (removeNode)
+            {
+                if (this.getFinalNode().getGraphLocation()[0] == 0 && this.getFinalNode().getGraphLocation()[1] == 0)
+                {
+                    this.pathway.RemoveAt(this.pathway.Count - 1);
+                } else
+                {
+                    removeNode = false;
+                }
+            }
+        }
+
     }
 }

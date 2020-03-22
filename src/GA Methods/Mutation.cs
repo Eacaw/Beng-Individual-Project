@@ -16,17 +16,17 @@ namespace BEng_Individual_Project.GA_Methods
             // Generate a random number to see if mutation should occur
             double mutationChance = prng.NextDouble();
 
+            double mutationValue = 1 - ((double)mutationPercentage / 100);
+
             // Check if mutation chance is within range
-            if (mutationChance > (1 - mutationPercentage / 100)) // mutation percentage of 2 = 0.98 (1 - (2/100))
+            if (mutationChance > mutationValue) // mutation percentage of 2 = 0.98 (1 - (2/100))
             {
                 int breakawayPointOne = prng.Next(1, childAgent.agentPath.getNodeCount() - 2); // Ensure that both starting and target nodes are never the breakaway points
                 int breakawayPointTwo = breakawayPointOne;
-                while (breakawayPointTwo == breakawayPointOne) // Ensure the two indecies are different
+                while (breakawayPointTwo - breakawayPointOne < 5) // Ensure the two indecies are different and at least 5 apart
                 {
                     breakawayPointTwo = prng.Next(1, childAgent.agentPath.getNodeCount() - 2);
                 }
-
-                Console.WriteLine("One: " + breakawayPointOne + " Two: " + breakawayPointTwo);
 
                 // Make sure breakaway point one is the lower of the two
                 if (breakawayPointOne > breakawayPointTwo)
@@ -58,12 +58,12 @@ namespace BEng_Individual_Project.GA_Methods
 
                 if (mutationPathCost > oldPathwayCost)
                 {
-                    Console.WriteLine("Not Replaced");
+                    //Console.WriteLine("Not Replaced");
                     return childAgent;
                 }
                 else
                 {
-                    Console.WriteLine("Replaced");
+                    //Console.WriteLine("Replaced");
                     childAgent.agentPath.splicePathSections(newMutationPath);
                 }
             }

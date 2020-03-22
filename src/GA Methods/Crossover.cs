@@ -75,13 +75,13 @@ namespace BEng_Individual_Project.GA_Methods
             childPath.addNodeToPath(parentBPath[0]);
 
             // Add the first half of the path from parent A
-            for (int i = 1; i < crossoverIndex + 1; i++)
+            for (int i = 1; i < crossoverIndex; i++)
             {
                 childPath.addNodeToPath(parentAPath[i]);
             }
 
             // Add second half of path from parent B
-            for (int i = crossoverIndex + 1; i < parentBPath.Count; i++)
+            for (int i = crossoverIndex; i < parentBPath.Count; i++)
             {
                 childPath.addNodeToPath(parentBPath[i]); 
             }

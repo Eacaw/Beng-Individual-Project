@@ -7,6 +7,11 @@ namespace BEng_Individual_Project.src
         Agent parentA { get; set; }
         Agent parentB { get; set; }
 
+        public matingPartners()
+        {
+
+        }
+
         public matingPartners(Agent ParentA, Agent ParentB)
         {
             // Sort the parents such that parent A has the longer path by node count

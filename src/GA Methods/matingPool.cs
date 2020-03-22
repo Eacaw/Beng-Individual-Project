@@ -27,12 +27,16 @@ namespace BEng_Individual_Project.src.GAMethods
             {
                 // Iterate based on the fitness of the current agent
                 // Adds a quantity equal to the agent's fitness to the mating pool
-                for (int agentFitness = 0; agentFitness < population[agentCount].fitnessScore; agentFitness++)
+                int fitnessInt = (int)Math.Floor(population[agentCount].fitnessScore);
+                for (int agentFitness = 0; agentFitness < fitnessInt; agentFitness++)
                 {
                     this.selectionPool.Add(population[agentCount]);
+                    matingPool.Add(population[agentCount]);
                 }
             }
-            return this.selectionPool;
+
+            this.selectionPool = matingPool;
+            return matingPool;
         }
 
         /**
@@ -50,7 +54,7 @@ namespace BEng_Individual_Project.src.GAMethods
             for (int agentCount = 0; agentCount < population.Count; agentCount++)
             {
                 //Iterate based on the agent's rank in the population
-                for (int agentRank = 0; agentRank < agentCount + 1; agentCount++)
+                for (int agentRank = 0; agentRank < agentCount + 1; agentRank++)
                 {
                     this.selectionPool.Add(population[agentCount]);
                 }

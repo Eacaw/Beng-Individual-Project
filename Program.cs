@@ -14,8 +14,8 @@ namespace BEng_Individual_Project
         static void Main(string[] args)
         {
             // GA Defining Variables
-            int populationSize = 100;
-            int topScore = 0;// populationSize - 1;
+            int populationSize = 10050;
+            int topScore = populationSize - 1;
 
             int mutationPercentage = 2;
 
@@ -34,13 +34,15 @@ namespace BEng_Individual_Project
             List<Agent> population = generateInitialPopulation(graph, populationSize, maxDistance);
             matingPool breedingPool;
             // Do 100 generations test
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 5000; i++)
             {
                 // Clear the mating pool
                 breedingPool = new matingPool();
 
                 // Use linear roulette selection
-                breedingPool.linearRouletteSelectionFitness(population);
+                breedingPool.elitismSelection(population, 25);
+                //breedingPool.linearRouletteSelectionFitness(population);
+                //breedingPool.linearRouletteSelectionRank(population);
 
                 // Clear the current population list
                 population = new List<Agent>();
@@ -52,47 +54,23 @@ namespace BEng_Individual_Project
                     Agent childAgent = Crossover.performCrossover(parentSelection);
                     childAgent = Mutation.mutatePathWithoutLimit(childAgent, mutationPercentage);
                     childAgent.pathCost = childAgent.agentPath.getPathCost();
+                    childAgent.agentPath.removeFinalTwoNodes(); // This is a complete hack - bodged the fuck out of it -- also terribly named
                     childAgent.findDistanceToTarget();
                     population.Add(childAgent);
                 }
-                // Find the minimum and maximum path length for mapping
-                float maxPath = 0;
-                float minPath = float.MaxValue;
-                for (int k = 0; k < population.Count; k++)
-                {
-                    if (population[k].pathCost > maxPath)
-                    {
-                        maxPath = population[k].pathCost;
-                    }
-                    if (population[k].pathCost < minPath)
-                    {
-                        minPath = population[k].pathCost;
-                    }
-                }
 
-                // Calculate the fitness for each agent
-                for (int k = 0; k < population.Count; k++)
-                {
-                    population[k].fitnessScore = Fitness.calculateWeightedFitness(population[k], 1, 0, maxPath, minPath, maxDistance);
-                }
+                population = sortPopulationByFitness(population, maxDistance);
 
-                // Order the population by fitness (Lo-Hi)
-                population = population.OrderBy(o => o.fitnessScore).ToList();
 
-                if (population[topScore].distanceFromTarget == 0)
-                {
-                    population[topScore].hitTarget = true;
-                }
-
-                
-                string hitTarget = "Nope";
-                if (population[topScore].hitTarget)
-                {
-                    hitTarget = "Yep";
-                }
-                Console.WriteLine("Generation: " + i + "\t fit: " + population[topScore].fitnessScore + 
-                                    "\t path: " + population[topScore].pathCost + "\t Dist: " + 
-                                        population[topScore].distanceFromTarget + "\t Hit: " + hitTarget);
+                Console.WriteLine("Generation: " + i + "\t fit: " + population[topScore].fitnessScore +
+                                    "\t path: " + population[topScore].pathCost + "\t Dist: " +
+                                        population[topScore].distanceFromTarget + "\t Nodes: " + population[topScore].agentPath.getNodeCount());
+                //for(int w = 0; w < 10; w++)
+                //{
+                //    Console.Write(" | " + population[topScore - w].pathCost);
+                //}
+                //Console.Write("\n");
+                //Console.Write("\n");
             }
 
 
@@ -161,31 +139,7 @@ namespace BEng_Individual_Project
             }
 
 
-            // Find the minimum and maximum path length for mapping
-            float maxPath = 0;
-            float minPath = float.MaxValue;
-            for (int i = 0; i < population.Count; i++)
-            {
-                if (population[i].pathCost > maxPath)
-                {
-                    maxPath = population[i].pathCost;
-                }
-                if (population[i].pathCost < minPath)
-                {
-                    minPath = population[i].pathCost;
-                }
-            }
-
-            // Calculate the fitness for each agent
-            for (int i = 0; i < population.Count; i++)
-            {
-                population[i].fitnessScore = Fitness.calculateWeightedFitness(population[i], 1, 0, maxPath, minPath, maxDistance);
-            }
-
-            // Order the population by fitness (Hi-Lo)
-            population = population.OrderBy(o => o.fitnessScore).ToList();
-
-
+            population = sortPopulationByFitness(population, maxDistance);
 
             // Output the top 10 agents details
             Console.Write("\n");
