@@ -4,9 +4,9 @@ namespace BEng_Individual_Project.src
     public class Hostile
     {
 
-        int[] hostilePosition;
-        float hostileSeverity;
-        float hostileRange;
+        public int[] hostilePosition;
+        public float hostileSeverity;
+        public float hostileRange;
 
 
         public Hostile(int xPos, int yPos, float severity, float elevation, float range)
@@ -26,6 +26,8 @@ namespace BEng_Individual_Project.src
             this.hostileRange = range;
 
         }
+
+       
 
 
 

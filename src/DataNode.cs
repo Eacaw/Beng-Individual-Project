@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Xamarin.Forms.Internals;
 
 namespace BEng_Individual_Project.src
 {
@@ -62,17 +63,35 @@ namespace BEng_Individual_Project.src
         {
             float costValue;
 
+            // Temporary fix to kill any path that has sequential nodes that aren't neighbours
+            // TODO: Figure out what is causing the breaks.
+            if(neighbourIndex == -1)
+            {
+                return 10000;
+            }
+
             if (this.neighbourNodes[neighbourIndex] != null && this.neighbourNodes[neighbourIndex].heightValue > 0) // Ensure that the neighbour being indexed isn't an edge
             {
                 costValue = this.heightValue - this.neighbourNodes[neighbourIndex].heightValue;
 
+                float pathDistance = 0;
+
+                if (neighbourIndex == 0 || neighbourIndex % 2 == 0)
+                {
+                    pathDistance = 1;
+                }
+                else
+                {
+                    pathDistance = 1.41f;
+                }
+
                 if (costValue > 0) // Path is Downhill
                 {
-                    return costValue / 2;
+                    return ((costValue / 2) + pathDistance);
                 }
                 else if (costValue < 0) // Path is Uphill
                 {
-                    return Math.Abs(costValue);
+                    return (Math.Abs(costValue) + pathDistance);
                 }
                 else // Path has no height difference
                 {
@@ -90,24 +109,12 @@ namespace BEng_Individual_Project.src
         public float getCostValue(DataNode neighbourNode)
         {
             {
-                float costValue;
-
                 if (neighbourNode.heightValue != -1) // Ensure that the neighbour being indexed isn't an edge
                 {
-                    costValue = this.heightValue - neighbourNode.heightValue;
 
-                    if (costValue > 0) // Path is Downhill
-                    {
-                        return costValue / 2;
-                    }
-                    else if (costValue < 0) // Path is Uphill
-                    {
-                        return Math.Abs(costValue);
-                    }
-                    else // Path has no height difference
-                    {
-                        return 0;
-                    }
+                    int neighbourIndex = this.neighbourNodes.IndexOf(neighbourNode);
+
+                    return getCostValue(neighbourIndex);
                 }
                 return -1; // Neighbour was an edge, and no value can be found.
             }
@@ -118,7 +125,7 @@ namespace BEng_Individual_Project.src
          */
          public void addHostileRiskValue(float hostileRisk)
         {
-            this.hostileRiskValue = hostileRisk;
+            this.hostileRiskValue += hostileRisk;
         }
 
         /**

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 namespace BEng_Individual_Project.src
 {
     public class matingPartners
@@ -7,9 +8,13 @@ namespace BEng_Individual_Project.src
         Agent parentA { get; set; }
         Agent parentB { get; set; }
 
+        public List<int> crossoverIndeciesA { get; set; }
+        public List<int> crossoverIndeciesB { get; set; }
+
         public matingPartners()
         {
-
+            this.crossoverIndeciesA = new List<int>();
+            this.crossoverIndeciesB = new List<int>();
         }
 
         public matingPartners(Agent ParentA, Agent ParentB)
@@ -24,7 +29,9 @@ namespace BEng_Individual_Project.src
             {
                 this.parentA = ParentB;
                 this.parentB = ParentA;
-            }  
+            }
+            this.crossoverIndeciesA = new List<int>();
+            this.crossoverIndeciesB = new List<int>();
         }
 
         public Agent getParentA()

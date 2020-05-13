@@ -21,9 +21,9 @@ namespace BEng_Individual_Project.GA_Methods
             // Check if mutation chance is within range
             if (mutationChance > mutationValue) // mutation percentage of 2 = 0.98 (1 - (2/100))
             {
-                int breakawayPointOne = prng.Next(1, childAgent.agentPath.getNodeCount() - 2); // Ensure that both starting and target nodes are never the breakaway points
+                int breakawayPointOne = prng.Next(1, childAgent.agentPath.getNodeCount() - 20 ); // Ensure that both starting and target nodes are never the breakaway points also not the end of the path
                 int breakawayPointTwo = breakawayPointOne;
-                while (breakawayPointTwo - breakawayPointOne < 5) // Ensure the two indecies are different and at least 5 apart
+                while (breakawayPointTwo == breakawayPointOne && breakawayPointTwo - breakawayPointOne < 5) // Ensure the two indecies are different and at least 5 apart - arbitrarily chosen value
                 {
                     breakawayPointTwo = prng.Next(1, childAgent.agentPath.getNodeCount() - 2);
                 }
@@ -42,6 +42,19 @@ namespace BEng_Individual_Project.GA_Methods
                 DataNode mutationStartNode = childAgent.agentPath.getPathway()[breakawayPointOne];
                 DataNode mutationTargetNode = childAgent.agentPath.getPathway()[breakawayPointTwo];
 
+
+                // add a 25% chance that the mutation will mutate away from the original path and try to
+                // reach the target node independantly of the original path.
+                // method will significantly increase computation time but will allow a much higher diversity rate in the population
+                int findNewPath = prng.Next(0, 100);
+                int newpathEnding = 0;
+                if (findNewPath > 25)
+                {
+                    mutationTargetNode = childAgent.targetNode;
+                    newpathEnding = 1;
+                }
+
+
                 float oldPathwayCost = childAgent.agentPath.getSectionCost(mutationStartNode, mutationTargetNode);
 
                 float distanceFromMutationTarget = numericalUtilities.getDistanceBetweenNodes(mutationStartNode, mutationTargetNode);
@@ -56,16 +69,30 @@ namespace BEng_Individual_Project.GA_Methods
                 // Check to see if the new path is shorter or longer than the old path, discard mutation if no improvement made
                 float mutationPathCost = newMutationPath.getPathCost();
 
-                if (mutationPathCost > oldPathwayCost)
-                {
-                    //Console.WriteLine("Not Replaced");
-                    return childAgent;
-                }
-                else
-                {
-                    //Console.WriteLine("Replaced");
-                    childAgent.agentPath.splicePathSections(newMutationPath);
-                }
+                //if (mutationPathCost > oldPathwayCost)
+                //{
+                //    //Console.WriteLine("Not Replaced");
+                //    return childAgent;
+                //}
+                //else
+                //{
+                    //Console.WriteLine("break points: \t\t\t" + breakawayPointOne + "  " + breakawayPointTwo);
+                    //Console.WriteLine("break points diff:\t\t" + (breakawayPointTwo - breakawayPointOne));
+                    //Console.WriteLine("mut path nodes: \t\t" + newMutationPath.getNodeCount());
+
+                    //int sizeDiff = (breakawayPointTwo - breakawayPointOne) - newMutationPath.getNodeCount();
+                    //int nodeDiff = childAgent.agentPath.getNodeCount();
+
+                    //Console.WriteLine("Child length before: \t\t" + childAgent.agentPath.getNodeCount());
+                    childAgent.agentPath.splicePathSections(newMutationPath, newpathEnding);
+                    //Console.WriteLine("Child length after: \t\t" + childAgent.agentPath.getNodeCount());
+
+                    //nodeDiff -= childAgent.agentPath.getNodeCount();
+
+                    //Console.WriteLine("Expected Diff: \t\t\t" + sizeDiff);
+                    //Console.WriteLine("Child node diff: \t\t" + nodeDiff);
+
+                //}
             }
 
             return childAgent;

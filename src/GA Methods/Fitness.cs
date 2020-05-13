@@ -13,14 +13,19 @@ namespace BEng_Individual_Project.GA_Methods
          * calculate the weighted fitness for the agent
          * ready for sorting and selection
          */
-        public static float calculateWeightedFitness(Agent agent, int pathWeight, int riskWeight, float maxPathLength, float minPathLength, float maxDistance)
+        public static float calculateWeightedFitness(Agent agent, int pathWeight, int riskWeight, float maxPathLength, float minPathLength, float maxDistance, float maxRisk)
         {
             float Fitness = 0;
-            float maxRisk= 0, minRisk = 0;
+            float minRisk = 0;
 
-            Fitness += getFitnessFromPathLength(agent, maxPathLength, minPathLength) * pathWeight;
+            // Calcualte the fitness score from each of the component areas
+            Fitness += getFitnessFromPathLength(agent, 10000, minPathLength) * pathWeight;
             Fitness += getFitnessFromDistanceToTarget(agent, maxDistance);
-            //Fitness += getFitnessFromRiskValue(agent, minRisk, maxRisk) * riskWeight;
+            Fitness += getFitnessFromRiskValue(agent, minRisk, maxRisk) * riskWeight;
+
+            // Calculate the maximum fitness score possible and map it between 0 and 100;
+            float maxFitness = 100 + (100 * pathWeight) + (100 * riskWeight);
+            Fitness = numericalUtilities.mapValue(Fitness, 0, maxFitness, 0, 100);
 
             return Fitness;
         }

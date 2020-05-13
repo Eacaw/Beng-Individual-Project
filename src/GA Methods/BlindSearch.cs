@@ -53,13 +53,11 @@ namespace BEng_Individual_Project.src.GAMethods
                 {
                     endOfPathReached = true;
                     blindSearchPath.addNodeToPath(currentNode);
-                    pathCost = blindSearchPath.getPathCost();
                     return blindSearchPath; // Writes Path as a white line
                 }
                 else if (currentNode.heightValue < 0) // Path can no longer continue
                 {
                     endOfPathReached = true;
-                    pathCost = blindSearchPath.getPathCost();
                     return blindSearchPath; // Writes Path as a black line
                 }
                 else // End of path not yet reached
@@ -68,7 +66,6 @@ namespace BEng_Individual_Project.src.GAMethods
                 }
             }
             // Failsafe statements - Never Reached in testing
-            pathCost = blindSearchPath.getPathCost();
             Console.WriteLine("Path Incomplete");
             return blindSearchPath;
 
@@ -101,7 +98,7 @@ namespace BEng_Individual_Project.src.GAMethods
             {
                 Random prng = new Random();
                 double chance = prng.NextDouble();
-                if (chance > 0.75) // Chance to select preferred neighbour - DEFAULT: 25% (Value set to 0.75%)
+                if (chance > 0.8) // Chance to select preferred neighbour - DEFAULT: 25% (Value set to 0.75)
                 {
                     return preferredNode;
                 }

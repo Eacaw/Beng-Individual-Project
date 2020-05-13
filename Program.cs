@@ -14,15 +14,15 @@ namespace BEng_Individual_Project
         static void Main(string[] args)
         {
             // GA Defining Variables
-            int populationSize = 10050;
+            int populationSize = 1000;
             int topScore = populationSize - 1;
 
             int mutationPercentage = 2;
 
             // Construct the graph and link all the nodes within
-            terrainGraph graph = new terrainGraph();
+            terrainGraph graph = new terrainGraph(0,0);
 
-            graph.increaseGrayscaleMapping();
+            //graph.increaseGrayscaleMapping();
 
             DataNode graphStartNode = graph.terrainNodes[0, 0];
             DataNode graphTargetNode = graph.terrainNodes[498, 498];
@@ -30,47 +30,97 @@ namespace BEng_Individual_Project
             // Max distance used for mapping the values in the fitness function
             float maxDistance = numericalUtilities.getDistanceBetweenNodes(graphStartNode, graphTargetNode);
 
-            // Generate the initial Population
-            List<Agent> population = generateInitialPopulation(graph, populationSize, maxDistance);
-            matingPool breedingPool;
-            // Do 100 generations test
-            for (int i = 0; i < 5000; i++)
+            for(int x = 1; x < 8; x++)
             {
-                // Clear the mating pool
-                breedingPool = new matingPool();
-
-                // Use linear roulette selection
-                breedingPool.elitismSelection(population, 25);
-                //breedingPool.linearRouletteSelectionFitness(population);
-                //breedingPool.linearRouletteSelectionRank(population);
-
-                // Clear the current population list
-                population = new List<Agent>();
-
-                // Produce the next generation for the population
-                for (int j = 0; j < populationSize; j++)
+                for(int y = 1; y < 8; y++)
                 {
-                    matingPartners parentSelection = Selection.randomSelectionFromPool(breedingPool);
-                    Agent childAgent = Crossover.performCrossover(parentSelection);
-                    childAgent = Mutation.mutatePathWithoutLimit(childAgent, mutationPercentage);
-                    childAgent.pathCost = childAgent.agentPath.getPathCost();
-                    childAgent.agentPath.removeFinalTwoNodes(); // This is a complete hack - bodged the fuck out of it -- also terribly named
-                    childAgent.findDistanceToTarget();
-                    population.Add(childAgent);
+                    int[] hostilePos = new int[2];
+                    hostilePos[0] = 60 * x;
+                    hostilePos[1] = 60 * y;
+                    Hostile centerHostile = new Hostile(hostilePos[0], hostilePos[1], 200, 0, 25);
+                    graph.addHostileToGraph(centerHostile, hostilePos);
+                }
+            }
+
+            graph.calculateMaximumRisk();
+
+            for (int testNo = 0; testNo < 10; testNo++)
+            {
+                Console.WriteLine("------------------Test: " + testNo + "------------------");
+
+                // Generate the initial Population
+                List<Agent> population = generateInitialPopulation(graph, populationSize, maxDistance);
+
+                for (int il = 0; il < population.Count; il++)
+                {
+                    population[il].agentPath.paintPathway(0);
                 }
 
-                population = sortPopulationByFitness(population, maxDistance);
+                graph.saveImageOfGraph("../../../OutputImages/GATesting/GATest-initialPopulation.bmp");
+
+                matingPool breedingPool;
+                // Do 100 generations test
+                //for (int i = 0; i < 100; i++)
+                int i = 0;
+                while (population[topScore].riskValue > 0)
+                {
+                    // Clear the mating pool
+                    breedingPool = new matingPool();
+
+                    // Selection Method
+                    breedingPool.elitismSelection(population, 50);
+                    //breedingPool.linearRouletteSelectionFitness(population);
+                    //breedingPool.linearRouletteSelectionRank(population);
+
+                    // Clear the current population list
+                    population = new List<Agent>();
+
+                    graph.resetNodeHeightValues();
+
+                    // Produce the next generation for the population
+                    for (int j = 0; j < populationSize; j++)
+                    {
+                        matingPartners parentSelection = Selection.randomSelectionFromPool(breedingPool);
+
+                        Agent childAgent = Crossover.performCrossover(parentSelection);
+
+                        childAgent = Mutation.mutatePathWithoutLimit(childAgent, mutationPercentage);
+
+                        childAgent.pathCost = childAgent.agentPath.getPathCost();
+
+                        childAgent.riskValue = childAgent.agentPath.getPathRisk();
+
+                        childAgent.agentPath.removeFinalTwoNodes();
+
+                        childAgent.findDistanceToTarget();
+
+                        population.Add(childAgent);
+
+                    }
+
+                    population = sortPopulationByFitness(population, maxDistance, graph.maxRisk);
 
 
-                Console.WriteLine("Generation: " + i + "\t fit: " + population[topScore].fitnessScore +
-                                    "\t path: " + population[topScore].pathCost + "\t Dist: " +
-                                        population[topScore].distanceFromTarget + "\t Nodes: " + population[topScore].agentPath.getNodeCount());
-                //for(int w = 0; w < 10; w++)
-                //{
-                //    Console.Write(" | " + population[topScore - w].pathCost);
-                //}
-                //Console.Write("\n");
-                //Console.Write("\n");
+
+                    population[topScore].pathCost = population[topScore].agentPath.getPathCost();
+
+                    Console.WriteLine("Generation: " + i + "\t fit: " + population[topScore].fitnessScore +
+                                        "\t path: " + population[topScore].pathCost + "\t Dist: " +
+                                            population[topScore].distanceFromTarget + "\t Nodes: " + population[topScore].agentPath.getNodeCount() +
+                                            "\t Risk: " + population[topScore].riskValue);
+
+                    population[topScore].agentPath.paintPathway(0);
+
+                    graph.saveImageOfGraph("../../../OutputImages/GATesting/New/Gen" + i + ".bmp");
+
+                    graph.resetNodeHeightValues();
+
+                    i++;
+
+                }
+
+                graph.saveImageOfGraph("../../../OutputImages/GATesting/Test" + testNo +".bmp");
+
             }
 
 
@@ -107,6 +157,7 @@ namespace BEng_Individual_Project
                     newAgent = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
                     newAgent.agentPath = BlindSearch.performBlindSearch(newAgent);
                     newAgent.pathCost = newAgent.agentPath.getPathCost();
+                    newAgent.riskValue = newAgent.agentPath.getPathRisk();
                     pathCostCheck = newAgent.pathCost;
                 }
 
@@ -139,7 +190,7 @@ namespace BEng_Individual_Project
             }
 
 
-            population = sortPopulationByFitness(population, maxDistance);
+            population = sortPopulationByFitness(population, maxDistance, graph.maxRisk);
 
             // Output the top 10 agents details
             Console.Write("\n");
@@ -150,7 +201,7 @@ namespace BEng_Individual_Project
                 {
                     hitTarget = "Yep";
                 }
-                Console.WriteLine("Agent: " + i + "\t fit: " + population[i].fitnessScore + "\t path: " + population[i].pathCost + "\t Dist: " + population[i].distanceFromTarget + "\t Hit: " + hitTarget);
+                Console.WriteLine("Agent: " + i + "\t fit: " + population[i].fitnessScore + "\t path: " + population[i].pathCost + "\t Dist: " + population[i].distanceFromTarget + "\t Hit: " + hitTarget + "\t Risk: " + population[i].riskValue);
             }
             Console.WriteLine("Agents reached target: " + agentsReachedTargetCount);
 
@@ -187,7 +238,7 @@ namespace BEng_Individual_Project
                     noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, 8, scale, 2, persistance);
 
                     // Construct the graph and link all the nodes within
-                    terrainGraph graph = new terrainGraph();
+                    terrainGraph graph = new terrainGraph(0,0);
 
                     StringBuilder filename = new StringBuilder("../../../OutputImages/TerrainGenTesting/O8 ");
                     //filename.Append(j.ToString());
@@ -240,7 +291,6 @@ namespace BEng_Individual_Project
                 {
                     population.Add(testAgent);
                     nonZeroAgents++;
-
                     totalPath += testAgent.agentPath.getPathCost();
 
                     // Add the agent's time to total for averaging
@@ -289,7 +339,7 @@ namespace BEng_Individual_Project
             return population;
         }
 
-        private static List<Agent> sortPopulationByFitness(List<Agent> population, float maxDistance)
+        private static List<Agent> sortPopulationByFitness(List<Agent> population, float maxDistance, float maxRisk)
         {
 
             // Find the minimum and maximum path length for mapping
@@ -310,7 +360,7 @@ namespace BEng_Individual_Project
             // Calculate the fitness for each agent
             for (int i = 0; i < population.Count; i++)
             {
-                population[i].fitnessScore = Fitness.calculateWeightedFitness(population[i], 1, 0, maxPath, minPath, maxDistance);
+                population[i].fitnessScore = Fitness.calculateWeightedFitness(population[i], 1, 2, maxPath, minPath, maxDistance, maxRisk);
             }
 
             // Order the population by fitness (Hi-Lo)

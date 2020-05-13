@@ -70,7 +70,8 @@ namespace BEng_Individual_Project.src.Utilities
             {
                 for (int j = 0; j < width; j++)
                 {
-                    imageDataBytes[write++] = (byte)(normaliseFloat(noiseValues[i, j], minMaxValues) * 255);
+                    //imageDataBytes[write++] = (byte)(normaliseFloat(noiseValues[i, j], minMaxValues) * 255);
+                    imageDataBytes[write++] = (byte)numericalUtilities.mapValue(noiseValues[i, j], minMaxValues[0], minMaxValues[1], 0, 255);
                 }
             }
 

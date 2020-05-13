@@ -29,6 +29,8 @@ namespace BEng_Individual_Project.src
             this.startingNode = startingNode;
             this.targetNode = targetNode;
 
+            this.pathCost = 0;
+
             // Add the edgeNode to the pathway at index 0;
             this.agentPath.addNodeToPath(edgeNode);
             // Add the starting Node to pathway at index 1;
@@ -46,11 +48,6 @@ namespace BEng_Individual_Project.src
             this.targetNode = parentAgent.targetNode;
 
             this.agentPath = newPath;
-
-            // Add edge node to the pathway at index 0
-            this.agentPath.addNodeToPath(parentAgent.agentPath.getNodeFromIndex(0));
-            // Add the starting node to pathway at index 1
-            this.agentPath.addNodeToPath(this.startingNode);
 
             this.hitTarget = false;
         }

@@ -42,7 +42,7 @@ namespace BEng_Individual_Project.src.GAMethods
         /**
          * Roulette Selection Methdod
          * Randomly select a mating partner with the probability
-         * of being selected proportional to the fitness of the agent
+         * of being selected proportional to the rank of the agent
          * Pool filled with number of agents equal to their rank in the total population
          */
         public List<Agent> linearRouletteSelectionRank(List<Agent> population)
@@ -59,13 +59,6 @@ namespace BEng_Individual_Project.src.GAMethods
                     this.selectionPool.Add(population[agentCount]);
                 }
             }
-
-            Random prng = new Random();
-
-            int parentAIndex = prng.Next(0, matingPool.Count);
-            int parentBIndex = prng.Next(0, matingPool.Count);
-
-
             return this.selectionPool;
         }
 
@@ -87,7 +80,7 @@ namespace BEng_Individual_Project.src.GAMethods
             }
 
             // Calculate how many agents should be in the pool
-            int totalAgentCountForSelection = (int)Math.Floor((double)(population.Count / elitePercentage));
+            int totalAgentCountForSelection = (int)Math.Floor((double)(population.Count / (100/elitePercentage)));
 
             // Incrementally add the top agents to the pool
             for (int i = 0; i < totalAgentCountForSelection + 1; i++)

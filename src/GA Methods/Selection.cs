@@ -12,12 +12,17 @@ namespace BEng_Individual_Project.src.GAMethods
          */
         public static matingPartners randomSelectionFromPool(matingPool matingPool)
         {
-            int poolSize = matingPool.selectionPool.Count -1;
+            int poolSize = matingPool.selectionPool.Count;
 
             Random prng = new Random();
 
             int parentAIndex = prng.Next(0, poolSize);
-            int parentBIndex = prng.Next(0, poolSize);
+            int parentBIndex = parentAIndex;
+
+            while(parentBIndex == parentAIndex)
+            {
+                parentBIndex = prng.Next(0, poolSize);
+            }
 
             return new matingPartners(matingPool.selectionPool[parentAIndex], matingPool.selectionPool[parentBIndex]);
         }
@@ -33,7 +38,12 @@ namespace BEng_Individual_Project.src.GAMethods
             Random prng = new Random();
 
             int parentAIndex = prng.Next(0, populationSize);
-            int parentBIndex = prng.Next(0, populationSize);
+            int parentBIndex = parentAIndex;
+
+            while (parentBIndex == parentAIndex)
+            {
+                parentBIndex = prng.Next(0, populationSize);
+            }
 
             return new matingPartners(population[parentAIndex], population[parentBIndex]);
 

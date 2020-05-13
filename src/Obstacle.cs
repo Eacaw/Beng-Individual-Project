@@ -33,6 +33,20 @@ namespace BEng_Individual_Project.src
         }
 
 
+        public static terrainGraph addObstacletoGraphAtCoords(terrainGraph graph, int height, int width, int xPos, int yPos)
+        {
+            for (int i = xPos; i < xPos + width; i++)
+            {
+                for (int j = yPos; j < yPos + height; j++)
+                {
+                    graph.terrainNodes[i, j].heightValue = -2;
+                }
+            }
+
+            return graph;
+        }
+
+
 
 
     }
