@@ -19,7 +19,7 @@ namespace BEng_Individual_Project.src.GAMethods
             int parentAIndex = prng.Next(0, poolSize);
             int parentBIndex = parentAIndex;
 
-            while(parentBIndex == parentAIndex)
+            while (parentBIndex == parentAIndex)
             {
                 parentBIndex = prng.Next(0, poolSize);
             }
@@ -47,6 +47,74 @@ namespace BEng_Individual_Project.src.GAMethods
 
             return new matingPartners(population[parentAIndex], population[parentBIndex]);
 
+        }
+
+
+        /**
+         * 
+         * 
+         */
+        public static matingPartners tournamentSelectionPool(matingPool matingPool, int firstRoundSize)
+        {
+
+            Random prng = new Random();
+
+            List<Agent> SelectedParents = new List<Agent>();
+
+            List<int> FirstRoundSelection = new List<int>();
+
+            bool parentsSelected = false;
+
+            // Repeat tournament selection to select two different parents
+
+            while (!parentsSelected)
+            {
+                // Select the indices of the first round of parents from the pool
+                // Ensuring unique indices for variation in the population
+                while (FirstRoundSelection.Count < firstRoundSize)
+                {
+                    int parentIndexFromPool = prng.Next(0, matingPool.selectionPool.Count - 1);
+
+                    if (!FirstRoundSelection.Contains(parentIndexFromPool))
+                    {
+                        FirstRoundSelection.Add(parentIndexFromPool);
+                    }
+                }
+
+                // Index of winner from pool
+                int tournamentWinner = 0;
+
+                float prevFitness = 0;
+
+                for (int i = 0; i < FirstRoundSelection.Count - 1; i++)
+                {
+
+                    float nextFitness = matingPool.selectionPool[FirstRoundSelection[i]].fitnessScore;
+
+                    if (nextFitness > prevFitness)
+                    {
+                        tournamentWinner = FirstRoundSelection[i];
+                        //Console.WriteLine("i = " + i + " next: " + nextFitness + " prev: " + prevFitness + " index: " + tournamentWinner);
+                    }
+
+                    prevFitness = matingPool.selectionPool[tournamentWinner].fitnessScore;
+                }
+
+                if (SelectedParents.Count < 2)
+                {
+                        SelectedParents.Add(matingPool.selectionPool[tournamentWinner]);
+                        if (SelectedParents.Count == 2)
+                        {
+                            parentsSelected = true;
+                        }
+                }
+
+                
+            }
+
+            matingPartners parents = new matingPartners(SelectedParents[0], SelectedParents[1]);
+
+            return parents;
         }
 
 

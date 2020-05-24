@@ -47,7 +47,7 @@ namespace BEng_Individual_Project.GA_Methods
         {
             // Multiply the distance from target by 10 in order to give more preference to
             // those that reached the target, ensuring they are more likely to procreate
-            return numericalUtilities.mapValue(agent.distanceFromTarget * 10, 0, maxDistance, 100, 0);
+            return numericalUtilities.mapValue(agent.distanceFromTarget * 10, 0, maxDistance * 10, 100, 0);
         }
 
 

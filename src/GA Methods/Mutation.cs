@@ -19,11 +19,11 @@ namespace BEng_Individual_Project.GA_Methods
             double mutationValue = 1 - ((double)mutationPercentage / 100);
 
             // Check if mutation chance is within range
-            if (mutationChance > mutationValue) // mutation percentage of 2 = 0.98 (1 - (2/100))
+            if (mutationChance > mutationValue && childAgent.agentPath.getNodeCount() > 5) // mutation percentage of 2 = 0.98 (1 - (2/100))
             {
-                int breakawayPointOne = prng.Next(1, childAgent.agentPath.getNodeCount() - 20 ); // Ensure that both starting and target nodes are never the breakaway points also not the end of the path
+                int breakawayPointOne = prng.Next(1, childAgent.agentPath.getNodeCount() - 2); // Ensure that both starting and target nodes are never the breakaway points also not the end of the path
                 int breakawayPointTwo = breakawayPointOne;
-                while (breakawayPointTwo == breakawayPointOne && breakawayPointTwo - breakawayPointOne < 5) // Ensure the two indecies are different and at least 5 apart - arbitrarily chosen value
+                while (breakawayPointTwo == breakawayPointOne && breakawayPointTwo - breakawayPointOne < 2) // Ensure the two indecies are different and at least 5 apart - arbitrarily chosen value
                 {
                     breakawayPointTwo = prng.Next(1, childAgent.agentPath.getNodeCount() - 2);
                 }
@@ -48,50 +48,42 @@ namespace BEng_Individual_Project.GA_Methods
                 // method will significantly increase computation time but will allow a much higher diversity rate in the population
                 int findNewPath = prng.Next(0, 100);
                 int newpathEnding = 0;
-                if (findNewPath > 25)
+                if (findNewPath > 50)
                 {
                     mutationTargetNode = childAgent.targetNode;
                     newpathEnding = 1;
                 }
 
-
-                float oldPathwayCost = childAgent.agentPath.getSectionCost(mutationStartNode, mutationTargetNode);
-
                 float distanceFromMutationTarget = numericalUtilities.getDistanceBetweenNodes(mutationStartNode, mutationTargetNode);
 
                 // Perform the blind search until the mutation has reached it's target
-                while(distanceFromMutationTarget > 0)
+                childAgent.findDistanceToTarget();
+                float oldDistanceFromTarget = childAgent.distanceFromTarget;
+
+                int attemptCount = 0;
+                //for(int attempts = 0; attempts < 5000; attempts++) // Give the blind search 50 attempts to reach the target
+                if (newpathEnding == 1)
                 {
-                    newMutationPath = src.GAMethods.BlindSearch.performBlindSearch(mutationStartNode, mutationTargetNode);
-                    distanceFromMutationTarget = numericalUtilities.getDistanceBetweenNodes(newMutationPath.getFinalNode(), mutationTargetNode);
+                    while (distanceFromMutationTarget > oldDistanceFromTarget && attemptCount < 5000)
+                    {
+                        newMutationPath = src.GAMethods.BlindSearch.performBlindSearch(mutationStartNode, mutationTargetNode, 1);
+                        distanceFromMutationTarget = numericalUtilities.getDistanceBetweenNodes(newMutationPath.getFinalNode(), mutationTargetNode);
+                        attemptCount++;
+                    }
+                } else
+                {
+                    while(distanceFromMutationTarget > 0 )//&& attemptCount < 10000)
+                    {
+                        newMutationPath = src.GAMethods.BlindSearch.performBlindSearch(mutationStartNode, mutationTargetNode, 1);
+                        distanceFromMutationTarget = numericalUtilities.getDistanceBetweenNodes(newMutationPath.getFinalNode(), mutationTargetNode);
+                        attemptCount++;
+                    }
+                    // = src.GAMethods.BlindSearch.performBlindSearch(mutationStartNode, mutationTargetNode, 1);
                 }
 
-                // Check to see if the new path is shorter or longer than the old path, discard mutation if no improvement made
-                float mutationPathCost = newMutationPath.getPathCost();
-
-                //if (mutationPathCost > oldPathwayCost)
+                //if (distanceFromMutationTarget == 0)
                 //{
-                //    //Console.WriteLine("Not Replaced");
-                //    return childAgent;
-                //}
-                //else
-                //{
-                    //Console.WriteLine("break points: \t\t\t" + breakawayPointOne + "  " + breakawayPointTwo);
-                    //Console.WriteLine("break points diff:\t\t" + (breakawayPointTwo - breakawayPointOne));
-                    //Console.WriteLine("mut path nodes: \t\t" + newMutationPath.getNodeCount());
-
-                    //int sizeDiff = (breakawayPointTwo - breakawayPointOne) - newMutationPath.getNodeCount();
-                    //int nodeDiff = childAgent.agentPath.getNodeCount();
-
-                    //Console.WriteLine("Child length before: \t\t" + childAgent.agentPath.getNodeCount());
-                    childAgent.agentPath.splicePathSections(newMutationPath, newpathEnding);
-                    //Console.WriteLine("Child length after: \t\t" + childAgent.agentPath.getNodeCount());
-
-                    //nodeDiff -= childAgent.agentPath.getNodeCount();
-
-                    //Console.WriteLine("Expected Diff: \t\t\t" + sizeDiff);
-                    //Console.WriteLine("Child node diff: \t\t" + nodeDiff);
-
+                childAgent.agentPath.splicePathSections(newMutationPath, newpathEnding);
                 //}
             }
 

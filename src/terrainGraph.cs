@@ -13,7 +13,7 @@ namespace BEng_Individual_Project.src
     {
         public DataNode[,] terrainNodes;
         public float[,] noiseMap;
-        private int height, width;
+        public int height, width;
 
         public float maxRisk;
 
@@ -22,15 +22,15 @@ namespace BEng_Individual_Project.src
         /**
          * Terrain Graph Constructor
          */
-        public terrainGraph(int obstacleCount, int hostileCount)
+        public terrainGraph(int dimensions)
         {
             // Initial Noise Values
             float[,] noiseValues;
 
             // Noise map generation Parameters
-            int width = 500; // Value must be divisable by two into an integer
+            int width = dimensions; // Value must be divisable by two into an integer
             int height = width; // Map must be square to avoid out of bounds error
-            int seed = 13337; // RNG seed
+            int seed = 1337; // RNG seed
             int octaves = 8; // Level of details
             float scale = 0.005f; // Higher scale = Less Terrain details
             int lacunarity = 2; // Value must be > 1

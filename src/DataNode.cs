@@ -65,9 +65,9 @@ namespace BEng_Individual_Project.src
 
             // Temporary fix to kill any path that has sequential nodes that aren't neighbours
             // TODO: Figure out what is causing the breaks.
-            if(neighbourIndex == -1)
+            if(neighbourIndex < 0 || neighbourIndex > 7)
             {
-                return 10000;
+                return 1000000;
             }
 
             if (this.neighbourNodes[neighbourIndex] != null && this.neighbourNodes[neighbourIndex].heightValue > 0) // Ensure that the neighbour being indexed isn't an edge
@@ -87,15 +87,18 @@ namespace BEng_Individual_Project.src
 
                 if (costValue > 0) // Path is Downhill
                 {
-                    return ((costValue / 2) + pathDistance);
+                    costValue /= 2;
+                    //costValue *= 8;
+                    costValue += pathDistance;;
+                    return costValue;
                 }
                 else if (costValue < 0) // Path is Uphill
                 {
-                    return (Math.Abs(costValue) + pathDistance);
+                    return ((Math.Abs(costValue)*2)+ pathDistance);
                 }
                 else // Path has no height difference
                 {
-                    return 0;
+                    return (pathDistance);
                 }
             }
 
@@ -109,7 +112,7 @@ namespace BEng_Individual_Project.src
         public float getCostValue(DataNode neighbourNode)
         {
             {
-                if (neighbourNode.heightValue != -1) // Ensure that the neighbour being indexed isn't an edge
+                if (neighbourNode.heightValue > 0) // Ensure that the neighbour being indexed isn't an edge
                 {
 
                     int neighbourIndex = this.neighbourNodes.IndexOf(neighbourNode);

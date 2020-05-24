@@ -13,40 +13,52 @@ namespace BEng_Individual_Project
     {
         static void Main(string[] args)
         {
+
+            GALoopTest();
+
+        }
+
+
+        private static void GALoopTest()
+        {
             // GA Defining Variables
-            int populationSize = 1000;
+            int populationSize = 100;
             int topScore = populationSize - 1;
 
-            int mutationPercentage = 2;
+            int mutationPercentage = 10;
+
+            int terrainDimensions = 100; // Terrain generated will be square
+            int targetNodeCoords = terrainDimensions - 2; // Target always two nodes in from bottom left corner
 
             // Construct the graph and link all the nodes within
-            terrainGraph graph = new terrainGraph(0,0);
+            terrainGraph graph = new terrainGraph(terrainDimensions);
 
             //graph.increaseGrayscaleMapping();
 
             DataNode graphStartNode = graph.terrainNodes[0, 0];
-            DataNode graphTargetNode = graph.terrainNodes[498, 498];
+            DataNode graphTargetNode = graph.terrainNodes[targetNodeCoords, targetNodeCoords];
 
             // Max distance used for mapping the values in the fitness function
             float maxDistance = numericalUtilities.getDistanceBetweenNodes(graphStartNode, graphTargetNode);
 
-            for(int x = 1; x < 8; x++)
-            {
-                for(int y = 1; y < 8; y++)
-                {
-                    int[] hostilePos = new int[2];
-                    hostilePos[0] = 60 * x;
-                    hostilePos[1] = 60 * y;
-                    Hostile centerHostile = new Hostile(hostilePos[0], hostilePos[1], 200, 0, 25);
-                    graph.addHostileToGraph(centerHostile, hostilePos);
-                }
-            }
+            //for (int x = 1; x < 8; x++)
+            //{
+            //    for (int y = 1; y < 8; y++)
+            //    {
+            int[] hostilePos = new int[2];
+            hostilePos[0] = 50;
+            hostilePos[1] = 50;
+            Hostile centerHostile = new Hostile(hostilePos[0], hostilePos[1], 10, 0, 15);
+            graph.addHostileToGraph(centerHostile, hostilePos);
+            //    }
+            //}
 
             graph.calculateMaximumRisk();
+            graph.maxRisk = 100;
 
-            for (int testNo = 0; testNo < 10; testNo++)
-            {
-                Console.WriteLine("------------------Test: " + testNo + "------------------");
+            //for (int testNo = 0; testNo < 10; testNo++)
+            //{
+                //Console.WriteLine("------------------Test: " + testNo + "------------------");
 
                 // Generate the initial Population
                 List<Agent> population = generateInitialPopulation(graph, populationSize, maxDistance);
@@ -62,13 +74,13 @@ namespace BEng_Individual_Project
                 // Do 100 generations test
                 //for (int i = 0; i < 100; i++)
                 int i = 0;
-                while (population[topScore].riskValue > 0)
+                while (i < 101)
                 {
                     // Clear the mating pool
                     breedingPool = new matingPool();
 
                     // Selection Method
-                    breedingPool.elitismSelection(population, 50);
+                    breedingPool.elitismSelection(population, 40);
                     //breedingPool.linearRouletteSelectionFitness(population);
                     //breedingPool.linearRouletteSelectionRank(population);
 
@@ -78,11 +90,16 @@ namespace BEng_Individual_Project
                     graph.resetNodeHeightValues();
 
                     // Produce the next generation for the population
-                    for (int j = 0; j < populationSize; j++)
+                    for (int j = 0; j < (int)(populationSize); j++) // requires the pool to be integer divisible by 0.1
                     {
-                        matingPartners parentSelection = Selection.randomSelectionFromPool(breedingPool);
+                        //matingPartners parentSelection = Selection.randomSelectionFromPool(breedingPool);
+
+                        matingPartners parentSelection = Selection.tournamentSelectionPool(breedingPool, 3);
 
                         Agent childAgent = Crossover.performCrossover(parentSelection);
+                        breedingPool.selectionPool[0].findDistanceToTarget();
+
+
 
                         childAgent = Mutation.mutatePathWithoutLimit(childAgent, mutationPercentage);
 
@@ -98,6 +115,9 @@ namespace BEng_Individual_Project
 
                     }
 
+
+
+
                     population = sortPopulationByFitness(population, maxDistance, graph.maxRisk);
 
 
@@ -109,23 +129,39 @@ namespace BEng_Individual_Project
                                             population[topScore].distanceFromTarget + "\t Nodes: " + population[topScore].agentPath.getNodeCount() +
                                             "\t Risk: " + population[topScore].riskValue);
 
-                    population[topScore].agentPath.paintPathway(0);
 
-                    graph.saveImageOfGraph("../../../OutputImages/GATesting/New/Gen" + i + ".bmp");
+                    bool painting = false;
+                    //population[topScore].agentPath.paintPathway(0);
+                    if (i % 100 == 0)
+                    {
+                        for (int paint = topScore; paint > (int)(populationSize / 20); paint--)
+                        {
+                            population[paint].agentPath.paintPathway(0);
+                            painting = true;
+                        }
+                    }
+                    else if (i % 1 == 0)
+                    {
+                        population[topScore].agentPath.paintPathway(0);
+                        painting = true;
+                    }
+
+                    if (painting)
+                    {
+                        graph.saveImageOfGraph("../../../OutputImages/GATesting/Gen" + i + ".bmp");
+                    }
+                    painting = false;
 
                     graph.resetNodeHeightValues();
 
                     i++;
 
                 }
+                population[topScore].agentPath.paintPathway(0);
+                //graph.saveImageOfGraph("../../../OutputImages/GATesting/Test" + testNo + ".bmp");
 
-                graph.saveImageOfGraph("../../../OutputImages/GATesting/Test" + testNo +".bmp");
-
-            }
-
-
+            //}
         }
-
 
 
         private static List<Agent> generateInitialPopulation(terrainGraph graph, int populationSize, float maxDistance)
@@ -133,8 +169,10 @@ namespace BEng_Individual_Project
             // Create the initial Population
             List<Agent> population = new List<Agent>();
 
+            int targetCoords = graph.height - 2;
+
             DataNode graphStartNode = graph.terrainNodes[0, 0];
-            DataNode graphTargetNode = graph.terrainNodes[498, 498];
+            DataNode graphTargetNode = graph.terrainNodes[targetCoords, targetCoords];
 
             // Bring the noise values up so that a black pathway can easily be seen
             //graph.increaseGrayscaleMapping();
@@ -152,14 +190,14 @@ namespace BEng_Individual_Project
                 int targetCheck = 0;
                 Agent newAgent = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
                 // Generate a new agent until reasonable path length is achieved
-                while (pathCostCheck < 1)
-                {
+                //while (pathCostCheck < 1)
+                //{
                     newAgent = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
-                    newAgent.agentPath = BlindSearch.performBlindSearch(newAgent);
+                    newAgent.agentPath = BlindSearch.performBlindSearch(newAgent, 0);
                     newAgent.pathCost = newAgent.agentPath.getPathCost();
                     newAgent.riskValue = newAgent.agentPath.getPathRisk();
                     pathCostCheck = newAgent.pathCost;
-                }
+                //}
 
                 newAgent.findDistanceToTarget();
 
@@ -231,23 +269,23 @@ namespace BEng_Individual_Project
             int populationSize = 10000;
 
             //for (int i = 1; i < 9; i++) { // i = octaves
-                for (int j = 1; j < 17; j++) // J = lacunarity
-                {
-                    scale = 0.001f * j;
-                    // Generate the initial noise map using Simplex Noise
-                    noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, 8, scale, 2, persistance);
+            for (int j = 1; j < 17; j++) // J = lacunarity
+            {
+                scale = 0.001f * j;
+                // Generate the initial noise map using Simplex Noise
+                noiseValues = NoiseMapLayering.getNoiseData(width, height, seed, 8, scale, 2, persistance);
 
-                    // Construct the graph and link all the nodes within
-                    terrainGraph graph = new terrainGraph(0,0);
+                // Construct the graph and link all the nodes within
+                terrainGraph graph = new terrainGraph(100);
 
-                    StringBuilder filename = new StringBuilder("../../../OutputImages/TerrainGenTesting/O8 ");
-                    //filename.Append(j.ToString());
-                    filename.Append(" S");
-                    filename.Append(scale.ToString());
-                    filename.Append(".bmp");
-                    graph.saveImageOfGraph(filename.ToString());
-                    Console.WriteLine("Test: " + (j));
-                }
+                StringBuilder filename = new StringBuilder("../../../OutputImages/TerrainGenTesting/O8 ");
+                //filename.Append(j.ToString());
+                filename.Append(" S");
+                filename.Append(scale.ToString());
+                filename.Append(".bmp");
+                graph.saveImageOfGraph(filename.ToString());
+                Console.WriteLine("Test: " + (j));
+            }
             //}
         }
 
@@ -281,7 +319,7 @@ namespace BEng_Individual_Project
                 // Generate new Agent for testing
                 Agent testAgent = new Agent(graph.terrainNodes[0, 0], graph.terrainNodes[width - 2, height - 2], graph.getEdgeNode());
                 // Generate Path for new agent
-                testAgent.agentPath = src.GAMethods.BlindSearch.performBlindSearch(testAgent);
+                testAgent.agentPath = src.GAMethods.BlindSearch.performBlindSearch(testAgent, 0);
 
                 // Stop stopwatch
                 agentWatch.Stop();
@@ -320,7 +358,7 @@ namespace BEng_Individual_Project
             //    if (population[i].distanceFromTarget > 0)
             //    {
             //        population[i].agentPath.paintPathway(0);
-                    
+
             //    } else
             //    {
             //        population[i].agentPath.paintPathway(600);

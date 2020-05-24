@@ -201,9 +201,16 @@ namespace BEng_Individual_Project.src
         /**
          * returns the final node in the path list
          */
-         public DataNode getFinalNode()
+        public DataNode getFinalNode()
         {
-            return this.pathway[this.pathway.Count - 1];
+            if (this.pathway.Count == 0)
+            {
+                return null;
+            }
+            else
+            {
+                return this.pathway[this.pathway.Count - 1];
+            }
         }
 
 
@@ -308,11 +315,11 @@ namespace BEng_Individual_Project.src
                 }
                 else
                 {
-                    Console.WriteLine("Replacement Path does not fit into existing path, check code routing");
+                    //Console.WriteLine("Replacement Path does not fit into existing path, check code routing");
                 }
             } else
             {
-                Console.WriteLine("Replacement Path empty");
+                //Console.WriteLine("Replacement Path empty");
             }
 
 
@@ -325,15 +332,19 @@ namespace BEng_Individual_Project.src
 
             while (removeNode)
             {
-                if (this.getFinalNode().getGraphLocation()[0] == 0 && this.getFinalNode().getGraphLocation()[1] == 0)
+                if (this.getFinalNode() != null)
                 {
-                    this.pathway.RemoveAt(this.pathway.Count - 1);
-                } else
-                {
-                    removeNode = false;
+                    if (this.getFinalNode().getGraphLocation()[0] == 0 && this.getFinalNode().getGraphLocation()[1] == 0)
+                    {
+                        this.pathway.RemoveAt(this.pathway.Count - 1);
+                    }
+                    else
+                    {
+                        removeNode = false;
+                    }
                 }
             }
         }
-
+        
     }
 }
