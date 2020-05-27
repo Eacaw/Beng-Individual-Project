@@ -342,6 +342,9 @@ namespace BEng_Individual_Project.src
                     {
                         removeNode = false;
                     }
+                } else
+                {
+                    removeNode = false;
                 }
             }
         }

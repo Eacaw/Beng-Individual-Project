@@ -251,7 +251,7 @@ namespace BEng_Individual_Project.src
 
                     if (this.terrainNodes[i, j].hostileRiskValue > 0)
                     {
-                        nodeToFloatData[i, j] = 500;
+                        nodeToFloatData[i, j] = 255 + (this.terrainNodes[i,j].hostileRiskValue * 10);
                     }
 
                     if (this.terrainNodes[i, j].heightValue != this.terrainNodes[i, j].paintValue)
@@ -359,13 +359,10 @@ namespace BEng_Individual_Project.src
 
 
 
-        public void addHostileToGraph(Hostile hostileNode, int[] hostilePosition)
+        public void addHostileToGraph(Hostile hostileNode)
         {
-            int hostileXPos = hostilePosition[0];
-            int hostileYPos = hostilePosition[1];
-
-            // Set the hostile position
-            hostileNode.hostilePosition = hostilePosition;
+            int hostileXPos = hostileNode.hostilePosition[0];
+            int hostileYPos = hostileNode.hostilePosition[1];
 
             // Find the furthest point to calculate the risk from
             // to avoid iterating over the entire graph
@@ -377,13 +374,14 @@ namespace BEng_Individual_Project.src
                 for (int j = riskStartY; j < (riskStartY + (2 * hostileNode.hostileRange)); j++)
                 { 
                     // Find the distance between the node and the hostile
-                    float distanceToHostile = numericalUtilities.getDistanceBetweenNodes(this.terrainNodes[i, j], hostilePosition);
+                    float distanceToHostile = numericalUtilities.getDistanceBetweenNodes(this.terrainNodes[i, j], this.terrainNodes[hostileXPos, hostileYPos]);
 
                     // Only apply the risk value if it is within range
                     if (distanceToHostile < hostileNode.hostileRange)
                     {
-                        float hostileRiskValue = hostileNode.hostileSeverity / (distanceToHostile + 1);
+                        float hostileRiskValue = hostileNode.hostileSeverity - (distanceToHostile);
                         this.terrainNodes[i, j].addHostileRiskValue(hostileRiskValue);
+                        this.terrainNodes[i, j].paintValue = 255-( hostileNode.hostileRange - distanceToHostile);
                     }
                 }
             }

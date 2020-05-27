@@ -46,6 +46,20 @@ namespace BEng_Individual_Project.src
             return graph;
         }
 
+        public static terrainGraph addObstacletoGraphAtCoords(terrainGraph graph, int TLX, int TLY, int BRX, int BRY, int flag)
+        {
+            for (int i = TLY; i < BRY; i++)
+            {
+                for (int j = TLX; j < BRX; j++)
+                {
+                    graph.terrainNodes[i, j].heightValue = -2;
+                    graph.terrainNodes[i, j].paintValue = 150;
+                }
+            }
+
+            return graph;
+        }
+
 
 
 

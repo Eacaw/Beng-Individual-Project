@@ -74,6 +74,10 @@ namespace BEng_Individual_Project.src.Utilities
          */
         public static float getDistanceBetweenNodes(DataNode start, DataNode end)
         {
+            if(start == null || end == null)
+            {
+                return 9999;
+            }
             int startX = start.getGraphLocation()[0];
             int startY = start.getGraphLocation()[1];
             int endX = end.getGraphLocation()[0];

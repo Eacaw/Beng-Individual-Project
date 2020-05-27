@@ -72,7 +72,7 @@ namespace BEng_Individual_Project.GA_Methods
                     }
                 } else
                 {
-                    while(distanceFromMutationTarget > 0 )//&& attemptCount < 10000)
+                    while(distanceFromMutationTarget > 0 && attemptCount < 10000)
                     {
                         newMutationPath = src.GAMethods.BlindSearch.performBlindSearch(mutationStartNode, mutationTargetNode, 1);
                         distanceFromMutationTarget = numericalUtilities.getDistanceBetweenNodes(newMutationPath.getFinalNode(), mutationTargetNode);

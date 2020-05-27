@@ -145,7 +145,7 @@ namespace BEng_Individual_Project.src.GAMethods
             //-------------------------------------------------------------------------------------------
             int searchType = prng.Next(0, 100);
 
-            if(searchType < 50){
+            if(searchType < 60){
                 int neighbourToMoveTo = prng.Next(0, 8);
 
                 if (stepStartNode.neighbourNodes[neighbourToMoveTo] == null || stepStartNode.neighbourNodes[neighbourToMoveTo].heightValue < 0 ||

@@ -22,145 +22,107 @@ namespace BEng_Individual_Project
         private static void GALoopTest()
         {
             // GA Defining Variables
-            int populationSize = 100;
+            int populationSize = 1000;
             int topScore = populationSize - 1;
+            int elitismPercentage = 25;
+            int mutationPercentage = 25;
 
-            int mutationPercentage = 10;
-
-            int terrainDimensions = 100; // Terrain generated will be square
+            int terrainDimensions = 250; // Terrain generated will be square
             int targetNodeCoords = terrainDimensions - 2; // Target always two nodes in from bottom left corner
 
             // Construct the graph and link all the nodes within
             terrainGraph graph = new terrainGraph(terrainDimensions);
 
-            //graph.increaseGrayscaleMapping();
-
-            DataNode graphStartNode = graph.terrainNodes[0, 0];
+            DataNode graphStartNode = graph.terrainNodes[0, 0]; // Starting node is top left corner
             DataNode graphTargetNode = graph.terrainNodes[targetNodeCoords, targetNodeCoords];
 
             // Max distance used for mapping the values in the fitness function
             float maxDistance = numericalUtilities.getDistanceBetweenNodes(graphStartNode, graphTargetNode);
 
-            //for (int x = 1; x < 8; x++)
-            //{
-            //    for (int y = 1; y < 8; y++)
-            //    {
-            int[] hostilePos = new int[2];
-            hostilePos[0] = 50;
-            hostilePos[1] = 50;
-            Hostile centerHostile = new Hostile(hostilePos[0], hostilePos[1], 10, 0, 15);
-            graph.addHostileToGraph(centerHostile, hostilePos);
-            //    }
-            //}
+            // Add pre-defined obstacles and hostile nodes
+            graph = constructTestTerrain(graph);
 
+            // Calculate total risk value from hostile nodes
             graph.calculateMaximumRisk();
-            graph.maxRisk = 100;
 
-            //for (int testNo = 0; testNo < 10; testNo++)
-            //{
-                //Console.WriteLine("------------------Test: " + testNo + "------------------");
+            // Generate the initial Population
+            List<Agent> population = generateInitialPopulation(graph, populationSize, maxDistance);
 
-                // Generate the initial Population
-                List<Agent> population = generateInitialPopulation(graph, populationSize, maxDistance);
+            // Paint the pathway of the initial population
+            for (int il = 0; il < population.Count; il++)
+            {
+                population[il].agentPath.paintPathway(0);
+            }
 
-                for (int il = 0; il < population.Count; il++)
+            graph.saveImageOfGraph("../../../OutputImages/GATesting/GATest-initialPopulation.bmp");
+
+            int i = 0;
+            while (i < 10001) // Max generations cut off at 10k
+            {
+                // Clear the mating pool
+                matingPool breedingPool = new matingPool();
+
+                // Selection Method
+                breedingPool.elitismSelection(population, elitismPercentage); // Elitism only used as other methods too inefficient
+
+                // Clear the current population list
+                population = new List<Agent>();
+
+                // Produce the next generation for the population
+                for (int j = 0; j < (int)(populationSize); j++) // requires the pool to be integer divisible by 0.1
                 {
-                    population[il].agentPath.paintPathway(0);
+                    // Selection
+                    matingPartners parentSelection = Selection.tournamentSelectionPool(breedingPool, 3);
+
+                    //Crossover
+                    Agent childAgent = Crossover.performCrossover(parentSelection);
+
+                    // Mutation
+                    childAgent = Mutation.mutatePathWithoutLimit(childAgent, mutationPercentage);
+
+                    // Calculate the child's values for fitness calculations
+                    childAgent.pathCost = childAgent.agentPath.getPathCost();
+                    childAgent.riskValue = childAgent.agentPath.getPathRisk();
+                    childAgent.agentPath.removeFinalTwoNodes();
+                    childAgent.findDistanceToTarget();
+
+                    // Add new child to population
+                    population.Add(childAgent);
+
                 }
 
-                graph.saveImageOfGraph("../../../OutputImages/GATesting/GATest-initialPopulation.bmp");
+                population = sortPopulationByFitness(population, maxDistance, graph.maxRisk);
 
-                matingPool breedingPool;
-                // Do 100 generations test
-                //for (int i = 0; i < 100; i++)
-                int i = 0;
-                while (i < 101)
+                Console.WriteLine("Generation: " + i + "\t fit: " + population[topScore].fitnessScore +
+                                    "\t path: " + population[topScore].pathCost + "\t Dist: " +
+                                        population[topScore].distanceFromTarget + "\t Nodes: " + population[topScore].agentPath.getNodeCount() +
+                                        "\t Risk: " + population[topScore].riskValue);
+
+
+                // Every 100 Generations paint the top 5% of the population to show variety
+                if (i % 100 == 0)
                 {
-                    // Clear the mating pool
-                    breedingPool = new matingPool();
-
-                    // Selection Method
-                    breedingPool.elitismSelection(population, 40);
-                    //breedingPool.linearRouletteSelectionFitness(population);
-                    //breedingPool.linearRouletteSelectionRank(population);
-
-                    // Clear the current population list
-                    population = new List<Agent>();
-
-                    graph.resetNodeHeightValues();
-
-                    // Produce the next generation for the population
-                    for (int j = 0; j < (int)(populationSize); j++) // requires the pool to be integer divisible by 0.1
+                    for (int paint = topScore; paint > (int)(populationSize / 20); paint--)
                     {
-                        //matingPartners parentSelection = Selection.randomSelectionFromPool(breedingPool);
-
-                        matingPartners parentSelection = Selection.tournamentSelectionPool(breedingPool, 3);
-
-                        Agent childAgent = Crossover.performCrossover(parentSelection);
-                        breedingPool.selectionPool[0].findDistanceToTarget();
-
-
-
-                        childAgent = Mutation.mutatePathWithoutLimit(childAgent, mutationPercentage);
-
-                        childAgent.pathCost = childAgent.agentPath.getPathCost();
-
-                        childAgent.riskValue = childAgent.agentPath.getPathRisk();
-
-                        childAgent.agentPath.removeFinalTwoNodes();
-
-                        childAgent.findDistanceToTarget();
-
-                        population.Add(childAgent);
-
+                        population[paint].agentPath.paintPathway(0);
+                        graph.saveHeatmapImageOfGraph("../../../OutputImages/GATesting/Heatmap" + i + ".bmp");
                     }
-
-
-
-
-                    population = sortPopulationByFitness(population, maxDistance, graph.maxRisk);
-
-
-
-                    population[topScore].pathCost = population[topScore].agentPath.getPathCost();
-
-                    Console.WriteLine("Generation: " + i + "\t fit: " + population[topScore].fitnessScore +
-                                        "\t path: " + population[topScore].pathCost + "\t Dist: " +
-                                            population[topScore].distanceFromTarget + "\t Nodes: " + population[topScore].agentPath.getNodeCount() +
-                                            "\t Risk: " + population[topScore].riskValue);
-
-
-                    bool painting = false;
-                    //population[topScore].agentPath.paintPathway(0);
-                    if (i % 100 == 0)
-                    {
-                        for (int paint = topScore; paint > (int)(populationSize / 20); paint--)
-                        {
-                            population[paint].agentPath.paintPathway(0);
-                            painting = true;
-                        }
-                    }
-                    else if (i % 1 == 0)
-                    {
-                        population[topScore].agentPath.paintPathway(0);
-                        painting = true;
-                    }
-
-                    if (painting)
-                    {
-                        graph.saveImageOfGraph("../../../OutputImages/GATesting/Gen" + i + ".bmp");
-                    }
-                    painting = false;
-
-                    graph.resetNodeHeightValues();
-
-                    i++;
-
                 }
-                population[topScore].agentPath.paintPathway(0);
-                //graph.saveImageOfGraph("../../../OutputImages/GATesting/Test" + testNo + ".bmp");
+                // Otherwise just output the top scoring agent from the generation
+                else
+                {
+                    population[topScore].agentPath.paintPathway(0);
+                }
 
-            //}
+                    graph.saveImageOfGraph("../../../OutputImages/GATesting/Gen" + i + ".bmp");
+
+                // Reset the paint values in the graph to avoid repeating painting paths
+                graph.resetNodeHeightValues();
+
+                
+                i++;
+
+            }
         }
 
 
@@ -192,11 +154,11 @@ namespace BEng_Individual_Project
                 // Generate a new agent until reasonable path length is achieved
                 //while (pathCostCheck < 1)
                 //{
-                    newAgent = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
-                    newAgent.agentPath = BlindSearch.performBlindSearch(newAgent, 0);
-                    newAgent.pathCost = newAgent.agentPath.getPathCost();
-                    newAgent.riskValue = newAgent.agentPath.getPathRisk();
-                    pathCostCheck = newAgent.pathCost;
+                newAgent = new Agent(graphStartNode, graphTargetNode, graph.getEdgeNode());
+                newAgent.agentPath = BlindSearch.performBlindSearch(newAgent, 0);
+                newAgent.pathCost = newAgent.agentPath.getPathCost();
+                newAgent.riskValue = newAgent.agentPath.getPathRisk();
+                pathCostCheck = newAgent.pathCost;
                 //}
 
                 newAgent.findDistanceToTarget();
@@ -417,6 +379,42 @@ namespace BEng_Individual_Project
             }
             return graph;
         }
+
+        private static terrainGraph constructTestTerrain(terrainGraph graph)
+        {
+            Hostile centerHostile = new Hostile(75, 75, 20, 0, 15);
+            Hostile centerHostile2 = new Hostile(75, 175, 20, 0, 15);
+            Hostile centerHostile3 = new Hostile(175, 175, 20, 0, 15);
+            Hostile centerHostile4 = new Hostile(175, 75, 20, 0, 15);
+            Hostile centerHostile5 = new Hostile(125, 75, 20, 0, 15);
+            Hostile centerHostile6 = new Hostile(125, 175, 20, 0, 15);
+            Hostile centerHostile7 = new Hostile(75, 125, 20, 0, 15);
+            Hostile centerHostile8 = new Hostile(175, 125, 20, 0, 15);
+            //Hostile centerHostile9 = new Hostile(50, 150, 10, 0, 10);
+            graph.addHostileToGraph(centerHostile);
+            graph.addHostileToGraph(centerHostile2);
+            graph.addHostileToGraph(centerHostile3);
+            graph.addHostileToGraph(centerHostile4);
+            graph.addHostileToGraph(centerHostile5);
+            graph.addHostileToGraph(centerHostile6);
+            graph.addHostileToGraph(centerHostile7);
+            graph.addHostileToGraph(centerHostile8);
+            //graph.addHostileToGraph(centerHostile9);
+
+            graph = Obstacle.addObstacletoGraphAtCoords(graph, 25, 25, 50, 100, 1);
+            graph = Obstacle.addObstacletoGraphAtCoords(graph, 50, 25, 100, 50, 1);
+            graph = Obstacle.addObstacletoGraphAtCoords(graph, 150, 25, 200, 50, 1);
+            graph = Obstacle.addObstacletoGraphAtCoords(graph, 200, 25, 225, 100, 1);
+            graph = Obstacle.addObstacletoGraphAtCoords(graph, 25, 150, 50, 225, 1);
+            graph = Obstacle.addObstacletoGraphAtCoords(graph, 50, 200, 100, 225, 1);
+            graph = Obstacle.addObstacletoGraphAtCoords(graph, 150, 200, 200, 225, 1);
+            graph = Obstacle.addObstacletoGraphAtCoords(graph, 200, 150, 225, 225, 1);
+            graph = Obstacle.addObstacletoGraphAtCoords(graph, 100, 100, 150, 150, 1);
+
+            return graph;
+        }
+
+
     }
 
 }
